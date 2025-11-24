@@ -1,0 +1,541 @@
+% ===================================================================
+% PHẦN NÀY DO: Trần Hoàng Phúc phụ trách
+% Nội dung: Triển khai RTSP/RTP cơ bản (4 điểm)
+% ===================================================================
+
+\section{Triển khai giao thức RTSP ở Client và đóng gói RTP ở Server (4 điểm)}
+
+\textbf{Phần này chỉ bao gồm triển khai CƠ BẢN của giao thức RTSP và RTP, KHÔNG bao gồm các tính năng mở rộng như frame fragmentation cho HD video.}
+
+\subsection{RTSP Protocol - Client Side}
+
+\subsubsection{RTSP State Machine \& Constants}
+Client quản lý trạng thái phiên RTSP thông qua state machine với 3 trạng thái chính:
+
+\begin{lstlisting}[language=Python, caption={RTSP State Machine}]
+class Client:
+    # RTSP States
+    INIT = 0      # Trang thai khoi tao
+    READY = 1     # San sang phat video
+    PLAYING = 2   # Dang phat video
+    state = INIT
+    
+    # RTSP Request Types
+    SETUP = 0
+    PLAY = 1
+    PAUSE = 2
+    TEARDOWN = 3
+\end{lstlisting}
+
+\textbf{Luồng chuyển trạng thái:}
+\begin{itemize}
+    \item \texttt{INIT → READY}: Sau khi nhận SETUP response thành công
+    \item \texttt{READY → PLAYING}: Sau khi nhận PLAY response thành công
+    \item \texttt{PLAYING → READY}: Sau khi nhận PAUSE response thành công
+    \item \texttt{READY/PLAYING → INIT}: Sau khi nhận TEARDOWN response thành công
+\end{itemize}
+
+\subsubsection{Gửi RTSP Requests}
+
+\paragraph{Hàm sendRtspRequest()}
+Hàm này xử lý việc tạo và gửi các RTSP request đến server qua kết nối TCP.
+
+\begin{lstlisting}[language=Python, caption={SETUP Request}]
+def sendRtspRequest(self, requestCode):
+    """Gui RTSP request den server"""
+    request = ""
+    
+    if requestCode == self.SETUP and self.state == self.INIT:
+        # Bat dau thread nhan RTSP responses
+        threading.Thread(target=self.recvRtspReply, daemon=True).start()
+        
+        self.rtspSeq += 1
+        # Format: SETUP <filename> RTSP/1.0
+        request = f"SETUP {self.fileName} RTSP/1.0\n"
+        request += f"CSeq: {self.rtspSeq}\n"
+        request += f"Transport: RTP/UDP; client_port={self.rtpPort}"
+        self.requestSent = self.SETUP
+\end{lstlisting}
+
+\textbf{Chi tiết SETUP Request:}
+\begin{itemize}
+    \item Khởi tạo thread \texttt{recvRtspReply} để nhận response bất đồng bộ
+    \item Tăng \texttt{rtspSeq} để đánh số thứ tự request
+    \item Header \texttt{Transport} chỉ định cổng UDP mà client sẽ nhận RTP packets
+    \item Lưu loại request đã gửi vào \texttt{requestSent}
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption={PLAY Request}]
+elif requestCode == self.PLAY and self.state == self.READY:
+    self.rtspSeq += 1
+    # Format: PLAY <filename> RTSP/1.0
+    request = f"PLAY {self.fileName} RTSP/1.0\n"
+    request += f"CSeq: {self.rtspSeq}\n"
+    request += f"Session: {self.sessionId}"
+    self.requestSent = self.PLAY
+\end{lstlisting}
+
+\textbf{Chi tiết PLAY Request:}
+\begin{itemize}
+    \item Chỉ được gửi khi ở trạng thái \texttt{READY}
+    \item Bao gồm \texttt{Session ID} nhận được từ SETUP response
+    \item Không có header \texttt{Transport} (đã thiết lập ở SETUP)
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption={PAUSE Request}]
+elif requestCode == self.PAUSE and self.state == self.PLAYING:
+    self.rtspSeq += 1
+    # Format: PAUSE <filename> RTSP/1.0
+    request = f"PAUSE {self.fileName} RTSP/1.0\n"
+    request += f"CSeq: {self.rtspSeq}\n"
+    request += f"Session: {self.sessionId}"
+    self.requestSent = self.PAUSE
+\end{lstlisting}
+
+\textbf{Chi tiết PAUSE Request:}
+\begin{itemize}
+    \item Chỉ được gửi khi đang ở trạng thái \texttt{PLAYING}
+    \item Tạm dừng streaming nhưng giữ nguyên phiên kết nối
+    \item Có thể tiếp tục bằng PLAY request
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption={TEARDOWN Request \& Sending}]
+elif requestCode == self.TEARDOWN and not self.state == self.INIT:
+    self.rtspSeq += 1
+    # Format: TEARDOWN <filename> RTSP/1.0
+    request = f"TEARDOWN {self.fileName} RTSP/1.0\n"
+    request += f"CSeq: {self.rtspSeq}\n"
+    request += f"Session: {self.sessionId}"
+    self.requestSent = self.TEARDOWN
+else:
+    return
+
+try:
+    # Gui qua RTSP socket (TCP)
+    self.rtspSocket.send(request.encode("utf-8"))
+    print(f"Sent RTSP request:\n{request}")
+except Exception as e:
+    print(f"Send error: {e}")
+\end{lstlisting}
+
+\textbf{Chi tiết TEARDOWN Request:}
+\begin{itemize}
+    \item Kết thúc phiên streaming và giải phóng tài nguyên
+    \item Đóng tất cả socket connections
+    \item Đưa client về trạng thái \texttt{INIT}
+\end{itemize}
+
+\subsubsection{Nhận RTSP Responses}
+
+\paragraph{Hàm recvRtspReply()}
+Thread này chạy liên tục để nhận và xử lý RTSP responses từ server.
+
+\begin{lstlisting}[language=Python, caption={Receive RTSP Reply Thread}]
+def recvRtspReply(self):
+    """Thread nhan RTSP responses tu server"""
+    while True:
+        try:
+            reply = self.rtspSocket.recv(1024)
+            if reply:
+                self.parseRtspReply(reply.decode("utf-8"))
+            if self.requestSent == self.TEARDOWN:
+                self.rtspSocket.shutdown(socket.SHUT_RDWR)
+                self.rtspSocket.close()
+                break
+        except:
+            break
+\end{lstlisting}
+
+\textbf{Chức năng:}
+\begin{itemize}
+    \item Nhận response từ RTSP socket (TCP)
+    \item Decode và parse response
+    \item Đóng socket sau khi nhận TEARDOWN response
+\end{itemize}
+
+\paragraph{Hàm parseRtspReply()}
+Parse RTSP response và cập nhật trạng thái client.
+
+\begin{lstlisting}[language=Python, caption={Parse RTSP Response}]
+def parseRtspReply(self, data):
+    """Parse RTSP response va cap nhat state"""
+    try:
+        lines = data.split('\n')
+        seqNum = int(lines[1].split(' ')[1])
+        
+        # Verify sequence number
+        if seqNum == self.rtspSeq:
+            session = int(lines[2].split(' ')[1])
+            
+            # Luu session ID lan dau
+            if self.sessionId == 0:
+                self.sessionId = session
+            
+            # Verify session ID
+            if self.sessionId == session:
+                # Kiem tra status code
+                if int(lines[0].split(' ')[1]) == 200:
+                    if self.requestSent == self.SETUP:
+                        # SETUP OK -> READY state
+                        self.state = self.READY
+                        self.openRtpPort()
+                        # Bat dau nhan RTP packets
+                        threading.Thread(target=self.listenRtp, 
+                                       daemon=True).start()
+                        
+                    elif self.requestSent == self.PLAY:
+                        # PLAY OK -> PLAYING state
+                        self.state = self.PLAYING
+                        
+                    elif self.requestSent == self.PAUSE:
+                        # PAUSE OK -> READY state
+                        self.state = self.READY
+                        self.playEvent.set()
+                        
+                    elif self.requestSent == self.TEARDOWN:
+                        # TEARDOWN OK -> INIT state
+                        self.state = self.INIT
+                        self.teardownAcked = 1
+    except Exception as e:
+        print(f"Parse error: {e}")
+\end{lstlisting}
+
+\textbf{Xử lý response:}
+\begin{itemize}
+    \item Xác thực \texttt{CSeq} và \texttt{Session ID}
+    \item Kiểm tra status code (200 = OK)
+    \item Cập nhật state machine dựa trên loại request
+    \item Khởi tạo RTP listener sau SETUP thành công
+\end{itemize}
+
+\subsubsection{Kết nối RTSP \& RTP}
+
+\begin{lstlisting}[language=Python, caption={Connect to Server}]
+def connectToServer(self):
+    """Tao RTSP socket (TCP) va ket noi den server"""
+    self.rtspSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        self.rtspSocket.connect((self.serverAddr, self.serverPort))
+        print(f"RTSP connection established")
+    except Exception as e:
+        print(f"Connection failed: {e}")
+
+def openRtpPort(self):
+    """Mo UDP socket de nhan RTP packets"""
+    try:
+        self.rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.rtpSocket.settimeout(0.5)
+        self.rtpSocket.bind(('', self.rtpPort))
+        print(f"RTP port {self.rtpPort} opened")
+    except Exception as e:
+        print(f"Unable to bind RTP port: {e}")
+\end{lstlisting}
+
+\textbf{Hai loại kết nối:}
+\begin{itemize}
+    \item \textbf{RTSP Socket (TCP):} Dùng cho control messages
+    \item \textbf{RTP Socket (UDP):} Dùng cho streaming data với timeout 0.5s
+\end{itemize}
+
+\subsection{RTP Encoding - Server Side}
+
+\subsubsection{RTP Header Structure}
+
+RTP packet được thiết kế theo chuẩn RFC 3550 với header 12 bytes.
+
+\paragraph{Header Layout (RFC 3550)}
+
+\begin{verbatim}
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|V=2|P|X|  CC   |M|     PT      |       sequence number         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           timestamp                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           synchronization source (SSRC) identifier            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            payload                            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{verbatim}
+
+\textbf{Header Size:} 12 bytes (96 bits)
+
+\subsubsection{Field Definitions}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|l|c|}
+\hline
+\textbf{Field} & \textbf{Bits} & \textbf{Description} & \textbf{Value} \\
+\hline
+V (Version) & 2 & RTP version & 2 \\
+P (Padding) & 1 & Padding flag & 0 \\
+X (Extension) & 1 & Extension flag & 0 \\
+CC (CSRC Count) & 4 & CSRC count & 0 \\
+M (Marker) & 1 & Marker bit & 0 \\
+PT (Payload Type) & 7 & Payload type & 26 (MJPEG) \\
+Sequence Number & 16 & Packet sequence & Tăng dần \\
+Timestamp & 32 & Sampling instant & Unix time \\
+SSRC & 32 & Sync source & 0 \\
+\hline
+\end{tabular}
+\caption{RTP Header Fields}
+\end{table}
+
+\textbf{Lưu ý:} Trong triển khai cơ bản, Marker bit = 0 (mỗi frame được gửi trong 1 packet). Marker bit sẽ được sử dụng cho frame fragmentation trong phần HD Video Streaming.
+
+\subsubsection{Decode RTP Packets}
+
+\begin{lstlisting}[language=Python, caption={RTP Decode Methods}]
+def decode(self, byteStream):
+    """Decode RTP packet"""
+    self.header = bytearray(byteStream[:HEADER_SIZE])
+    self.payload = byteStream[HEADER_SIZE:]
+
+def version(self):
+    return int(self.header[0] >> 6)
+
+def seqNum(self):
+    seqNum = self.header[2] << 8 | self.header[3]
+    return int(seqNum)
+
+def timestamp(self):
+    timestamp = (self.header[4] << 24 | self.header[5] << 16 | 
+                self.header[6] << 8 | self.header[7])
+    return int(timestamp)
+
+def payloadType(self):
+    pt = self.header[1] & 127
+    return int(pt)
+
+def marker(self):
+    """Return Marker bit"""
+    return int(self.header[1] >> 7)
+
+def getPayload(self):
+    return self.payload
+    
+def getPacket(self):
+    """Return complete RTP packet (header + payload)"""
+    return self.header + self.payload
+\end{lstlisting}
+
+\subsubsection{Tạo RTP Packets (Cơ bản)}
+
+\begin{lstlisting}[language=Python, caption={Make RTP Packet - Basic Version}]
+def makeRtp(self, payload, frameNbr):
+    """
+    Tao RTP packet co ban (1 frame = 1 packet)
+    
+    Args:
+        payload: Frame data
+        frameNbr: Sequence number
+    
+    Returns:
+        Complete RTP packet (header + payload)
+    """
+    version = 2      # RTP version 2
+    padding = 0      # No padding
+    extension = 0    # No extension
+    cc = 0          # No CSRC
+    marker = 0      # Marker bit = 0 trong triển khai cơ bản
+    pt = 26         # Payload Type: MJPEG (RFC 2435)
+    seqnum = frameNbr
+    ssrc = 0        # Synchronization source identifier
+    
+    rtpPacket = RtpPacket()
+    rtpPacket.encode(version, padding, extension, cc, 
+                     seqnum, marker, pt, ssrc, payload)
+    return rtpPacket.getPacket()
+\end{lstlisting}
+
+\textbf{Tham số RTP packet cơ bản:}
+\begin{itemize}
+    \item \textbf{Version = 2:} Chuẩn RTP version 2
+    \item \textbf{PT = 26:} MJPEG payload type theo RFC 2435
+    \item \textbf{Marker bit = 0:} Trong triển khai cơ bản, mỗi frame là 1 packet
+    \item \textbf{Sequence number:} Tăng dần theo số frame
+\end{itemize}
+
+\subsubsection{Gửi RTP Packets (Cơ bản)}
+
+\begin{lstlisting}[language=Python, caption={Send RTP Stream - Basic Version}]
+def sendRtp(self):
+    """Main streaming loop - gui RTP packets (co ban)"""
+    while True:
+        frame_start = time.time()
+        
+        # Check for pause/stop
+        if self.clientInfo['event'].isSet():
+            print("Stopping RTP stream")
+            break
+        
+        # Doc frame tu video file
+        data = self.clientInfo['videoStream'].nextFrame()
+        
+        if not data:
+            print("End of video")
+            break
+        
+        frameNumber = self.clientInfo['videoStream'].frameNbr()
+        
+        try:
+            address = self.clientInfo['rtspSocket'][1][0]
+            port = int(self.clientInfo['rtpPort'])
+            
+            # Tao va gui 1 RTP packet cho 1 frame
+            packet = self.makeRtp(data, frameNumber)
+            self.clientInfo['rtpSocket'].sendto(packet, (address, port))
+            
+            self.frames_sent += 1
+            self.bytes_sent += len(data)
+            
+        except Exception as e:
+            print(f"Send error: {e}")
+            break
+        
+        # Frame rate control (25 FPS)
+        frame_elapsed = time.time() - frame_start
+        time.sleep(max(0, 0.04 - frame_elapsed))
+\end{lstlisting}
+
+\textbf{Streaming loop cơ bản:}
+\begin{itemize}
+    \item Đọc frame từ video file
+    \item Tạo 1 RTP packet cho toàn bộ frame (không chia nhỏ)
+    \item Gửi qua UDP
+    \item Frame rate control: 25 FPS (0.04s/frame)
+    \item Dừng khi nhận pause/stop event
+\end{itemize}
+
+\subsubsection{Xử lý RTSP Requests}
+
+\begin{lstlisting}[language=Python, caption={Process RTSP Request - SETUP}]
+def processRtspRequest(self, data):
+    """Xu ly RTSP requests tu client"""
+    try:
+        request = data.split('\n')
+        line1 = request[0].split(' ')
+        requestType = line1[0]
+        filename = line1[1]
+        seq = request[1].split(' ')
+        
+        if requestType == self.SETUP:
+            if self.state == self.INIT:
+                print("Processing SETUP")
+                try:
+                    # Mo video file
+                    self.clientInfo['videoStream'] = VideoStream(filename)
+                    self.state = self.READY
+                    
+                    # Tao UDP socket cho RTP
+                    self.clientInfo["rtpSocket"] = socket.socket(
+                        socket.AF_INET, socket.SOCK_DGRAM
+                    )
+                    
+                except IOError:
+                    self.replyRtsp(self.FILE_NOT_FOUND_404, seq[1])
+                    return
+                
+                # Generate random session ID
+                self.clientInfo['session'] = randint(100000, 999999)
+                
+                # Gui RTSP reply
+                self.replyRtsp(self.OK_200, seq[1])
+                
+                # Lay RTP port tu request
+                self.clientInfo['rtpPort'] = request[2].split('=')[1]
+\end{lstlisting}
+
+\textbf{SETUP processing:}
+\begin{itemize}
+    \item Mở video file
+    \item Tạo UDP socket cho RTP streaming
+    \item Generate random Session ID
+    \item Gửi 200 OK response với Session ID
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption={Process RTSP Request - PLAY/PAUSE/TEARDOWN}]
+elif requestType == self.PLAY:
+    if self.state == self.READY:
+        print("processing PLAY\n")
+        self.state = self.PLAYING
+        self.start_time = time.time()
+        
+        self.replyRtsp(self.OK_200, seq[1])
+        
+        # Bat dau streaming
+        self.clientInfo['event'] = threading.Event()
+        self.clientInfo['worker'] = threading.Thread(
+            target=self.sendRtp, 
+            daemon=True
+        )
+        self.clientInfo['worker'].start()
+
+elif requestType == self.PAUSE:
+    if self.state == self.PLAYING:
+        print("processing PAUSE\n")
+        self.state = self.READY
+        self.clientInfo['event'].set()
+        self.replyRtsp(self.OK_200, seq[1])
+
+elif requestType == self.TEARDOWN:
+    print("processing TEARDOWN\n")
+    self.clientInfo['event'].set()
+    self.replyRtsp(self.OK_200, seq[1])
+    
+    # Cleanup
+    if 'videoStream' in self.clientInfo:
+        self.clientInfo['videoStream'].close()
+    if 'rtpSocket' in self.clientInfo:
+        self.clientInfo['rtpSocket'].close()
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption={Reply RTSP}]
+def replyRtsp(self, code, seq):
+    """Gui RTSP reply"""
+    if code == self.OK_200:
+        reply = (f'RTSP/1.0 200 OK\n'
+                f'CSeq: {seq}\n'
+                f'Session: {self.clientInfo["session"]}')
+        connSocket = self.clientInfo['rtspSocket'][0]
+        connSocket.send(reply.encode())
+        print(f"Sent RTSP reply:\n{reply}")
+    elif code == self.FILE_NOT_FOUND_404:
+        print("404 FILE NOT FOUND")
+    elif code == self.CON_ERR_500:
+        print("500 CONNECTION ERROR")
+\end{lstlisting}
+
+\textbf{RTSP responses:}
+\begin{itemize}
+    \item \textbf{200 OK:} Request thành công
+    \item \textbf{404 Not Found:} Video file không tồn tại
+    \item \textbf{500 Error:} Lỗi kết nối
+\end{itemize}
+
+\subsection{Tóm tắt triển khai RTSP/RTP cơ bản}
+
+\subsubsection{RTSP Client}
+\begin{itemize}
+    \item State machine: INIT → READY → PLAYING
+    \item 4 methods: SETUP, PLAY, PAUSE, TEARDOWN
+    \item TCP connection cho RTSP control messages
+    \item UDP socket cho RTP data reception
+    \item Async thread để nhận responses và RTP packets
+\end{itemize}
+
+\subsubsection{RTP Server}
+\begin{itemize}
+    \item RTP header 12 bytes theo RFC 3550
+    \item \textbf{1 frame = 1 RTP packet} (không chia nhỏ frame)
+    \item Marker bit = 0 trong triển khai cơ bản
+    \item Sequence number tăng dần theo frame number
+    \item UDP transmission với frame rate 25 FPS
+    \item Session management với random Session ID
+\end{itemize}
+
+\textbf{Lưu ý quan trọng:} Phần triển khai cơ bản này chỉ hỗ trợ video với frame size nhỏ (có thể gửi trong 1 UDP packet). Để hỗ trợ HD video với frame size lớn, cần triển khai frame fragmentation (xem Section 4).
+
+\clearpage

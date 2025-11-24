@@ -1,0 +1,401 @@
+% ===================================================================
+% PHẦN NÀY DO: Nguyễn Hữu Gia Minh phụ trách
+% Nội dung: HD Video Streaming với Frame Fragmentation (3 điểm)
+% ===================================================================
+
+\section{HD Video Streaming và Frame Fragmentation (3 điểm)}
+
+\subsection{Vấn đề với UDP MTU}
+
+Khi triển khai cơ bản (1 frame = 1 packet), hệ thống gặp vấn đề với HD video:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Resolution} & \textbf{Average Frame Size} & \textbf{Vấn đề} \\
+\hline
+SD (640x480) & ~5-15 KB & OK với UDP MTU \\
+HD (1280x720) & ~30-80 KB & Vượt quá MTU \\
+Full HD (1920x1080) & ~100-200 KB & \textbf{CẦN FRAGMENTATION} \\
+\hline
+\end{tabular}
+\caption{Frame Sizes theo Resolution}
+\end{table}
+
+\textbf{UDP MTU (Maximum Transmission Unit):}
+\begin{itemize}
+    \item Ethernet MTU: 1500 bytes
+    \item IP header: 20 bytes
+    \item UDP header: 8 bytes
+    \item \textbf{UDP payload tối đa: 1472 bytes}
+\end{itemize}
+
+\textbf{Hậu quả khi frame size > MTU:}
+\begin{itemize}
+    \item Packets bị OS fragmentation ở IP layer
+    \item Nếu 1 IP fragment bị mất → toàn bộ frame corrupted
+    \item Client không thể detect và retransmit fragment cụ thể
+    \item Video bị freeze hoặc artifacts nghiêm trọng
+\end{itemize}
+
+\subsection{Frame Fragmentation Strategy}
+
+\subsubsection{Thiết kế giải pháp}
+
+Chia mỗi frame thành nhiều RTP packets, mỗi packet ≤ MTU:
+
+\begin{lstlisting}[language=Python, caption={Frame Fragmentation Constants}]
+# Fragmentation parameters
+MTU_SIZE = 1400         # Safe MTU size (< 1472)
+HEADER_SIZE = 12        # RTP header size
+CHUNK_SIZE = MTU_SIZE - HEADER_SIZE  # Payload per packet
+\end{lstlisting}
+
+\textbf{Fragment size calculation:}
+\begin{itemize}
+    \item MTU safe size: 1400 bytes (để dự phòng)
+    \item RTP header: 12 bytes
+    \item \textbf{Payload per fragment: 1388 bytes}
+\end{itemize}
+
+\subsubsection{Marker Bit Usage}
+
+Marker bit trong RTP header được sử dụng để đánh dấu fragment cuối của frame:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|}
+\hline
+\textbf{Marker bit} & \textbf{Ý nghĩa} & \textbf{Action} \\
+\hline
+0 & Fragment giữa & Lưu vào buffer \\
+1 & Fragment cuối cùng & Reassemble frame \\
+\hline
+\end{tabular}
+\caption{Marker Bit Semantics}
+\end{table}
+
+\textbf{Lưu ý:} Đây là điểm khác biệt chính so với triển khai cơ bản (nơi marker bit luôn = 0).
+
+\subsection{Server-Side Fragmentation}
+
+\subsubsection{makeRtp() - HD Version}
+
+\begin{lstlisting}[language=Python, caption={Make RTP Packet with Fragmentation Support}]
+def makeRtp(self, payload, frameNbr, marker=0):
+    """
+    Tao RTP packet voi ho tro fragmentation
+    
+    Args:
+        payload: Fragment data (or complete frame)
+        frameNbr: Sequence number cua packet
+        marker: 1 neu la fragment cuoi, 0 neu la fragment giua
+    
+    Returns:
+        Complete RTP packet (header + payload)
+    """
+    version = 2
+    padding = 0
+    extension = 0
+    cc = 0
+    # marker bit = 1 CHỈ KHI là fragment cuối cùng
+    pt = 26  # MJPEG payload type
+    seqnum = frameNbr
+    ssrc = 0
+    
+    rtpPacket = RtpPacket()
+    rtpPacket.encode(version, padding, extension, cc, 
+                     seqnum, marker, pt, ssrc, payload)
+    return rtpPacket.getPacket()
+\end{lstlisting}
+
+\textbf{Tham số mới:}
+\begin{itemize}
+    \item \texttt{marker}: Tham số để đánh dấu fragment cuối cùng
+    \item Giá trị: 0 (fragment giữa), 1 (fragment cuối)
+\end{itemize}
+
+\subsubsection{sendRtp() - HD Version}
+
+\begin{lstlisting}[language=Python, caption={Send RTP with Fragmentation}]
+def sendRtp(self):
+    """Main streaming loop voi frame fragmentation"""
+    while True:
+        frame_start = time.time()
+        
+        # Check for pause/stop
+        if self.clientInfo['event'].isSet():
+            print("Stopping RTP stream")
+            break
+        
+        # Doc frame tu video file
+        data = self.clientInfo['videoStream'].nextFrame()
+        
+        if not data:
+            print("End of video")
+            break
+        
+        frameNumber = self.clientInfo['videoStream'].frameNbr()
+        
+        try:
+            address = self.clientInfo['rtspSocket'][1][0]
+            port = int(self.clientInfo['rtpPort'])
+            
+            # FRAGMENTATION LOGIC
+            frame_size = len(data)
+            
+            if frame_size <= CHUNK_SIZE:
+                # Frame nho: gui 1 packet voi marker=1
+                packet = self.makeRtp(data, frameNumber, marker=1)
+                self.clientInfo['rtpSocket'].sendto(packet, 
+                                                    (address, port))
+                self.frames_sent += 1
+                self.bytes_sent += frame_size
+                
+            else:
+                # Frame lon: chia thanh nhieu fragments
+                num_fragments = (frame_size + CHUNK_SIZE - 1) // CHUNK_SIZE
+                print(f"Frame {frameNumber}: {frame_size}B -> "
+                      f"{num_fragments} fragments")
+                
+                for i in range(num_fragments):
+                    start = i * CHUNK_SIZE
+                    end = min(start + CHUNK_SIZE, frame_size)
+                    fragment = data[start:end]
+                    
+                    # Marker = 1 CHỈ cho fragment cuối cùng
+                    marker = 1 if (i == num_fragments - 1) else 0
+                    
+                    # Sequence number tang dan cho moi fragment
+                    seq = frameNumber + i
+                    
+                    packet = self.makeRtp(fragment, seq, marker=marker)
+                    self.clientInfo['rtpSocket'].sendto(packet, 
+                                                        (address, port))
+                    
+                    self.bytes_sent += len(fragment)
+                
+                self.frames_sent += 1
+            
+        except Exception as e:
+            print(f"Send error: {e}")
+            break
+        
+        # Frame rate control (25 FPS)
+        frame_elapsed = time.time() - frame_start
+        time.sleep(max(0, 0.04 - frame_elapsed))
+\end{lstlisting}
+
+\textbf{Fragmentation algorithm:}
+\begin{enumerate}
+    \item Kiểm tra frame size
+    \item Nếu frame size ≤ CHUNK\_SIZE: gửi 1 packet với marker=1
+    \item Nếu frame size > CHUNK\_SIZE:
+    \begin{itemize}
+        \item Tính số fragments: $\lceil \frac{\text{frame\_size}}{\text{CHUNK\_SIZE}} \rceil$
+        \item Chia frame thành các fragments
+        \item Gửi từng fragment với marker=0
+        \item Fragment cuối cùng: marker=1
+    \end{itemize}
+    \item Sequence number tăng dần cho mỗi fragment
+\end{enumerate}
+
+\subsection{Client-Side Reassembly}
+
+\subsubsection{listenRtp() - HD Version}
+
+\begin{lstlisting}[language=Python, caption={Receive and Reassemble RTP Packets}]
+def listenRtp(self):
+    """Thread nhan RTP packets va reassemble frames"""
+    self.frame_buffer = bytearray()  # Buffer cho fragments
+    current_frame_seq = -1           # Sequence cua frame hien tai
+    
+    while True:
+        try:
+            if self.playEvent.isSet():
+                break
+            
+            data = self.rtpSocket.recv(20480)  # Large buffer for fragments
+            
+            if data:
+                rtpPacket = RtpPacket()
+                rtpPacket.decode(data)
+                
+                currFrameNbr = rtpPacket.seqNum()
+                marker = rtpPacket.marker()  # Doc marker bit
+                
+                # Neu la frame moi
+                if currFrameNbr != current_frame_seq:
+                    current_frame_seq = currFrameNbr
+                    self.frame_buffer = bytearray()  # Reset buffer
+                
+                # Them fragment vao buffer
+                self.frame_buffer += rtpPacket.getPayload()
+                
+                # NEU marker=1: day la fragment cuoi -> reassemble
+                if marker == 1:
+                    # Frame hoan thanh
+                    complete_frame = bytes(self.frame_buffer)
+                    
+                    # Update metrics
+                    self.updateMetrics(rtpPacket, len(complete_frame))
+                    
+                    # Hien thi frame
+                    self.writeFrame(complete_frame)
+                    
+                    # Reset buffer cho frame tiep theo
+                    self.frame_buffer = bytearray()
+                    current_frame_seq = -1
+                
+        except socket.timeout:
+            continue
+        except Exception as e:
+            if not self.playEvent.isSet():
+                print(f"RTP receive error: {e}")
+            break
+\end{lstlisting}
+
+\textbf{Reassembly algorithm:}
+\begin{enumerate}
+    \item Nhận RTP packet
+    \item Decode và kiểm tra sequence number
+    \item Nếu sequence khác frame hiện tại → reset buffer
+    \item Append payload vào frame buffer
+    \item Kiểm tra marker bit:
+    \begin{itemize}
+        \item Marker = 0: chờ fragment tiếp theo
+        \item Marker = 1: frame hoàn thành → display
+    \end{itemize}
+    \item Reset buffer và chờ frame mới
+\end{enumerate}
+
+\subsubsection{Xử lý packet loss}
+
+\begin{lstlisting}[language=Python, caption={Packet Loss Detection}]
+def updateMetrics(self, rtpPacket, frameSize):
+    """Cap nhat metrics va detect packet loss"""
+    currSeq = rtpPacket.seqNum()
+    
+    # Detect packet loss
+    if self.lastSeq != -1:
+        expected = self.lastSeq + 1
+        if currSeq != expected:
+            lost = currSeq - expected
+            self.packetsLost += lost
+            print(f"Packet loss detected: {lost} packets")
+    
+    self.lastSeq = currSeq
+    self.bytesRecv += frameSize
+    self.framesRecv += 1
+\end{lstlisting}
+
+\textbf{Packet loss handling:}
+\begin{itemize}
+    \item So sánh sequence number hiện tại với expected
+    \item Gap trong sequence = packet loss
+    \item Đếm số packets lost
+    \item Frame bị loss fragment → skip (chờ frame mới)
+\end{itemize}
+
+\subsection{Ví dụ Frame Fragmentation}
+
+\textbf{Giả sử:} Frame Full HD với size = 150 KB
+
+\begin{lstlisting}[caption={Fragmentation Example}]
+Frame size: 153600 bytes
+Chunk size: 1388 bytes
+Number of fragments: ceil(153600 / 1388) = 111 fragments
+
+Fragment 1:   Seq=1000, Marker=0, Payload[0:1388]
+Fragment 2:   Seq=1001, Marker=0, Payload[1388:2776]
+Fragment 3:   Seq=1002, Marker=0, Payload[2776:4164]
+...
+Fragment 110: Seq=1109, Marker=0, Payload[151472:152860]
+Fragment 111: Seq=1110, Marker=1, Payload[152860:153600]  <- MARKER=1!
+\end{lstlisting}
+
+\textbf{Timeline client-side:}
+\begin{enumerate}
+    \item Nhận fragments 1-110: append vào buffer
+    \item Nhận fragment 111 với marker=1
+    \item Reassemble 111 fragments thành complete frame
+    \item Display frame
+    \item Reset buffer, chờ frame tiếp theo
+\end{enumerate}
+
+\subsection{Performance Metrics}
+
+\subsubsection{Bandwidth Calculation}
+
+\begin{lstlisting}[language=Python, caption={Calculate Statistics}]
+def calculateStats(self):
+    """Tinh bandwidth va thong ke"""
+    if self.framesRecv > 0:
+        elapsed = time.time() - self.startTime
+        
+        # Bandwidth (Mbps)
+        bandwidth = (self.bytesRecv * 8) / (elapsed * 1e6)
+        
+        # Frame rate (FPS)
+        fps = self.framesRecv / elapsed
+        
+        # Packet loss rate
+        totalPackets = self.lastSeq + 1
+        lossRate = (self.packetsLost / totalPackets) * 100
+        
+        print(f"Bandwidth: {bandwidth:.2f} Mbps")
+        print(f"Frame rate: {fps:.2f} FPS")
+        print(f"Packet loss: {lossRate:.2f}%")
+\end{lstlisting}
+
+\textbf{Metrics:}
+\begin{itemize}
+    \item \textbf{Bandwidth:} Bytes received × 8 / elapsed time
+    \item \textbf{Frame rate:} Frames received / elapsed time
+    \item \textbf{Loss rate:} Packets lost / total packets
+\end{itemize}
+
+\subsection{So sánh triển khai Basic vs HD}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Feature} & \textbf{Basic (4đ)} & \textbf{HD (3đ)} \\
+\hline
+Frame size limit & < 1472 bytes & Unlimited \\
+Fragments per frame & 1 & 1-200+ \\
+Marker bit & Always 0 & 0 or 1 \\
+Sequence number & Per frame & Per fragment \\
+Client buffer & Direct display & Reassembly buffer \\
+HD support & ❌ & ✅ \\
+Packet loss detection & Basic & Advanced \\
+\hline
+\end{tabular}
+\caption{Basic vs HD Implementation}
+\end{table}
+
+\subsection{Tóm tắt HD Video Streaming}
+
+\subsubsection{Server-side}
+\begin{itemize}
+    \item Kiểm tra frame size
+    \item Chia frame thành fragments nếu > MTU
+    \item Set marker=1 cho fragment cuối
+    \item Tăng sequence number cho mỗi fragment
+    \item Gửi tất cả fragments qua UDP
+\end{itemize}
+
+\subsubsection{Client-side}
+\begin{itemize}
+    \item Nhận RTP packets liên tục
+    \item Buffer fragments theo sequence number
+    \item Detect marker=1 để reassemble frame
+    \item Display frame hoàn chỉnh
+    \item Detect packet loss qua sequence gaps
+\end{itemize}
+
+\textbf{Kết quả:} Hỗ trợ streaming Full HD (1920×1080) với frame size lên đến 200 KB mà không bị fragmentation ở IP layer.
+
+\clearpage
