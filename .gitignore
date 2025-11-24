@@ -21,3 +21,21 @@ cache-*.jpg
 # OS
 .DS_Store
 Thumbs.db
+
+# Word documents
+*.docx
+~$*.docx
+
+# Zip files
+*.zip
+
+# Python RTP folder (temporary)
+python_rtp/
+skeleton_python_rtp/
+
+# LaTeX auxiliary files (optional - can be removed if team needs them)
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.synctex.gz
