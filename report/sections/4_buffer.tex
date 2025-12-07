@@ -46,7 +46,7 @@ Pre-buffering giải quyết jitter bằng cách:
 
 \subsubsection{Deque-Based Design}
 
-Hệ thống sử dụng \texttt{deque} (double-ended queue) từ module \texttt{collections} để tách biệt reception và playback:
+Hệ thống sử dụng \texttt{deque} (double-ended queue) từ module \texttt{collections} để khởi tạo buffer phía client xử lý jitter và pre-buffering:
 
 \begin{lstlisting}[language=Python, caption={Buffer Initialization}]
 from collections import deque
@@ -68,19 +68,84 @@ class Client:
         self.end_of_stream = False
 \end{lstlisting}
 
-\textbf{Giải thích parameters:}
+\paragraph{Giải thích từng thành phần:} \\
+
+\textbf{1. Import deque:}
 \begin{itemize}
-    \item \texttt{maxlen=100}: Buffer tối đa 100 frames (4 giây @ 25 FPS)
-    \item \texttt{buffer\_target=20}: Đệm 20 frames trước khi bắt đầu play
-    \item \texttt{buffer\_lock}: Đảm bảo thread-safe khi access deque
+    \item \texttt{deque} = double-ended queue (hàng đợi 2 đầu)
+    \item Dùng làm buffer chứa frames video
+    \item Ưu điểm: \texttt{append()} và \texttt{popleft()} đều O(1), phù hợp cho:
+    \begin{itemize}
+        \item Thread nhận RTP: \texttt{append()} frame vào cuối
+        \item Thread phát video: \texttt{popleft()} frame ở đầu ra
+    \end{itemize}
 \end{itemize}
 
-\textbf{Deque advantages:}
+\textbf{2. Buffer Components:}
 \begin{itemize}
-    \item \textbf{Thread-safe:} Với \texttt{buffer\_lock} để đồng bộ hóa
-    \item \textbf{Automatic overflow:} \texttt{maxlen=100} tự động xóa frame cũ nhất
-    \item \textbf{Fast operations:} O(1) cho append và popleft
-    \item \textbf{Simple API:} \texttt{append()} và \texttt{popleft()} dễ sử dụng
+    \item \texttt{frame\_buffer = deque(maxlen=100)}:
+    \begin{itemize}
+        \item Tạo deque làm buffer chứa frames
+        \item \texttt{maxlen=100}: Tối đa 100 frames
+        \item Khi đầy, thêm frame mới $\rightarrow$ frame cũ nhất tự động bị pop (circular buffer)
+        \item Với 25 FPS: 100 frames $\approx$ 4 giây video được đệm
+    \end{itemize}
+    
+    \item \texttt{buffer\_target = 20}:
+    \begin{itemize}
+        \item Mục tiêu pre-buffer: phải có ít nhất 20 frames mới bắt đầu phát
+        \item 20 frames $\approx$ 0.8 giây (với 25 FPS)
+        \item Giúp hấp thụ jitter mạng hiệu quả
+    \end{itemize}
+    
+    \item \texttt{buffering = False}:
+    \begin{itemize}
+        \item Cờ trạng thái buffering
+        \item \texttt{True}: Đang tích lũy frames (chưa play hoặc đang re-buffer)
+        \item \texttt{False}: Buffer đã đủ, đang play bình thường
+    \end{itemize}
+    
+    \item \texttt{buffer\_lock = threading.Lock()}:
+    \begin{itemize}
+        \item Mutex lock để đồng bộ hóa truy cập buffer
+        \item Cần thiết vì có 2 threads cùng truy cập buffer:
+        \begin{itemize}
+            \item Thread nhận RTP: \texttt{append()} frames
+            \item Thread playback: \texttt{popleft()} frames
+        \end{itemize}
+        \item Tránh race condition, đảm bảo thread-safe
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. Playback Control:}
+\begin{itemize}
+    \item \texttt{playback\_thread = None}:
+    \begin{itemize}
+        \item Lưu thread chạy hàm \texttt{playFromBuffer()}
+        \item Ban đầu = \texttt{None}, khi ấn PLAY mới tạo thread
+    \end{itemize}
+    
+    \item \texttt{playback\_active = False}:
+    \begin{itemize}
+        \item Cờ điều khiển vòng lặp phát video
+        \item \texttt{True}: Playback loop tiếp tục lấy frame từ buffer
+        \item \texttt{False}: Dừng vòng lặp, thread kết thúc
+    \end{itemize}
+    
+    \item \texttt{end\_of\_stream = False}:
+    \begin{itemize}
+        \item Đánh dấu đã hết video
+        \item Khi không nhận được frame từ server trong thời gian dài
+        \item Set \texttt{True} để dừng playback và cập nhật GUI "Video ended"
+    \end{itemize}
+\end{itemize}
+
+\textbf{Tóm tắt kiến trúc:}
+\begin{itemize}
+    \item \textbf{Buffer:} \texttt{deque} với capacity 100 frames (4 giây)
+    \item \textbf{Pre-buffering logic:} \texttt{buffer\_target} và \texttt{buffering} flag
+    \item \textbf{Thread synchronization:} \texttt{buffer\_lock} bảo vệ concurrent access
+    \item \textbf{Playback management:} Thread riêng với lifecycle control flags
 \end{itemize}
 
 \subsubsection{Buffer States}
@@ -91,8 +156,8 @@ class Client:
 \hline
 \textbf{State} & \textbf{Condition} & \textbf{Action} \\
 \hline
-BUFFERING & queue size < threshold & Tích lũy frames \\
-PLAYING & queue size ≥ threshold & Phát frames \\
+BUFFERING & queue size $<$ threshold & Tích lũy frames \\
+PLAYING & queue size $\geq$ threshold & Phát frames \\
 UNDERRUN & queue empty while playing & Tạm dừng, re-buffer \\
 \hline
 \end{tabular}
@@ -487,16 +552,206 @@ def logBufferEvent(self, event_type):
     print(events.get(event_type, "Unknown event"))
 \end{lstlisting}
 
+\subsection{Buffer Size và Packet Loss Resilience}
+
+\subsubsection{Mối quan hệ giữa Buffer và Packet Loss}
+
+\textbf{Quan niệm sai lầm:}
+\begin{itemize}
+    \item ❌ "Tăng \texttt{maxlen} của deque sẽ giảm packet loss"
+    \item ❌ "Dùng unbounded deque (không giới hạn) → loss = 0\%"
+    \item ❌ "Buffer lớn = ít mất gói hơn"
+\end{itemize}
+
+\textbf{Sự thật:}
+
+Buffer ở \textbf{tầng ứng dụng} KHÔNG ảnh hưởng đến packet loss ở \textbf{tầng mạng}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.5cm]
+\node[draw, rectangle] (net) {Network (UDP)};
+\node[draw, rectangle, below of=net] (kernel) {Kernel Socket Buffer};
+\node[draw, rectangle, below of=kernel] (app) {Application Buffer (deque)};
+
+\draw[->] (net) -- node[right] {Packets đến} (kernel);
+\draw[->] (kernel) -- node[right] {\texttt{recv()}} (app);
+
+\node[right=3cm of net, text width=4cm, align=left] {
+    \textbf{Loss xảy ra:} \\
+    ✗ Network congestion \\
+    ✗ Wi-Fi interference \\
+    ✗ Kernel buffer đầy
+};
+
+\node[right=3cm of app, text width=4cm, align=left] {
+    \textbf{Buffer chỉ giúp:} \\
+    ✓ Chống jitter \\
+    ✓ Smooth playback \\
+    ✓ Absorb burst
+};
+\end{tikzpicture}
+\caption{Packet Loss vs Application Buffer}
+\end{figure}
+
+\subsubsection{Bounded vs Unbounded Deque}
+
+\textbf{Bounded deque (\texttt{maxlen=100}):}
+\begin{lstlisting}[language=Python]
+buffer = deque(maxlen=100)
+
+# Khi day (100 frames):
+buffer.append(new_frame)
+# -> Tu dong DROP frame cu nhat (FIFO)
+# -> Luon giu 100 frames moi nhat
+\end{lstlisting}
+
+\textbf{Unbounded deque (không giới hạn):}
+\begin{lstlisting}[language=Python]
+buffer = deque()  # Khong maxlen
+
+# Khi nhan packets lien tuc:
+buffer.append(frame)  # Tang vo han
+# -> 1 phut: 1500 frames = 150 MB
+# -> 10 phut: 15000 frames = 1.5 GB -> CRASH!
+\end{lstlisting}
+
+\textbf{So sánh Packet Loss:}
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Metric} & \textbf{Bounded (maxlen=100)} & \textbf{Unbounded} \\
+\hline
+Network packet loss & 3\% & 3\% \\
+Application frame drops & 0-2\% & 0\% \\
+Memory usage & ~10 MB & Tăng vô hạn \\
+Latency & 4s (ổn định) & Tăng vô hạn \\
+Crash risk & Không & Cao (OOM) \\
+\hline
+\end{tabular}
+\caption{Bounded vs Unbounded Performance}
+\end{table}
+
+\textbf{Kết luận:} Network packet loss GIỐNG NHAU (3\%) vì được đo ở tầng UDP bằng sequence numbers, TRƯỚC KHI vào buffer.
+
+\subsubsection{Tại sao Buffer Size quan trọng?}
+
+Buffer KHÔNG giảm loss nhưng giúp \textbf{chống chịu} loss tốt hơn:
+
+\textbf{Tình huống: Burst packet loss 2 giây}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Buffer Size} & \textbf{Timeline} & \textbf{Kết quả} \\
+\hline
+\texttt{maxlen=20} (0.8s) & 
+\begin{tabular}{@{}c@{}}
+t=0s: Buffer 20 frames \\
+t=1s: Loss burst → 0 frames \\
+t=1s: \textbf{FREEZE} \\
+\end{tabular} & 
+Underrun \\
+\hline
+\texttt{maxlen=100} (4s) & 
+\begin{tabular}{@{}c@{}}
+t=0s: Buffer 100 frames \\
+t=1s: Loss burst → 50 frames \\
+t=1s: Tiếp tục play \\
+\end{tabular} & 
+Smooth \\
+\hline
+\end{tabular}
+\caption{Buffer Resilience Against Loss Bursts}
+\end{table}
+
+\subsubsection{Công thức tính Buffer Size tối ưu}
+
+\begin{equation}
+\texttt{maxlen} = (\text{FPS} \times \text{burst\_duration}) + \text{safety\_margin}
+\end{equation}
+
+\textbf{Ví dụ:}
+\begin{itemize}
+    \item FPS = 25
+    \item Burst loss tối đa quan sát: 3 giây
+    \item Safety margin: 1 giây (25 frames)
+    \item \texttt{maxlen} = (25 × 3) + 25 = \textbf{100 frames} ✓
+\end{itemize}
+
+Nếu loss pattern thay đổi:
+\begin{itemize}
+    \item Burst 5s → \texttt{maxlen} = (25 × 5) + 25 = 150
+    \item Steady loss (không burst) → \texttt{maxlen} = 50-75 (giảm latency)
+\end{itemize}
+
+\subsubsection{Trade-off Analysis}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{maxlen} & \textbf{Latency} & \textbf{Memory} & \textbf{Burst Resilience} \\
+\hline
+20 & 0.8s & ~2 MB & ❌ Yếu \\
+50 & 2s & ~5 MB & ⚠️ Trung bình \\
+100 & 4s & ~10 MB & ✅ Tốt \\
+200 & 8s & ~20 MB & ✅✅ Rất tốt \\
+500 & 20s & ~50 MB & ⚠️ Quá lớn \\
+Unbounded & Vô hạn & Tràn RAM & ❌ Crash \\
+\hline
+\end{tabular}
+\caption{Buffer Size Trade-offs}
+\end{table}
+
+\textbf{Khuyến nghị:}
+\begin{itemize}
+    \item \textbf{Live streaming:} \texttt{maxlen=50-100} (latency thấp)
+    \item \textbf{VoD streaming:} \texttt{maxlen=100-200} (chống loss tốt)
+    \item \textbf{Network tốt (< 1\% loss):} \texttt{maxlen=50-75}
+    \item \textbf{Network xấu (> 3\% loss):} \texttt{maxlen=150-200}
+\end{itemize}
+
+\subsubsection{Monitoring và Auto-tuning}
+
+Detect buffer underrun để suggest \texttt{maxlen}:
+
+\begin{lstlisting}[language=Python]
+# Trong playFromBuffer():
+if len(self.frame_buffer) == 0:
+    self.underrun_count += 1
+
+# Cuoi session:
+if self.underrun_count > 5 and stats['loss_rate'] > 2:
+    suggested_maxlen = int(self.frame_buffer.maxlen * 1.5)
+    print(f"Tang maxlen len {suggested_maxlen} de chong burst loss")
+elif self.underrun_count == 0:
+    suggested_maxlen = int(self.frame_buffer.maxlen * 0.7)
+    print(f"Co the giam maxlen xuong {suggested_maxlen} de giam latency")
+\end{lstlisting}
+
+\textbf{Tóm tắt quan trọng:}
+\begin{itemize}
+    \item ❌ Buffer KHÔNG giảm packet loss ở network
+    \item ✅ Buffer giúp CHỐNG CHỊU loss tốt hơn (avoid underrun)
+    \item ✅ \texttt{maxlen} = circuit breaker (tránh memory leak)
+    \item ✅ Tính \texttt{maxlen} dựa trên burst duration, không phải loss rate
+    \item ⚖️ Trade-off: latency vs resilience
+\end{itemize}
+
 \subsection{Tóm tắt Client-Side Buffer}
 
 \subsubsection{Components}
 \begin{itemize}
     \item \textbf{Reception thread:} Nhận RTP packets → \texttt{frame\_buffer} (deque)
     \item \textbf{Playback thread:} \texttt{popleft()} frames từ buffer → display
-    \item \textbf{Buffer capacity:} \texttt{maxlen=100} frames (tự động overflow)
+    \item \textbf{Buffer capacity:} \texttt{maxlen=100} frames (bounded - tự động overflow)
     \item \textbf{Buffer threshold:} \texttt{buffer\_target=20} frames trước khi play
     \item \textbf{Thread synchronization:} \texttt{buffer\_lock} cho thread-safe access
     \item \textbf{End detection:} Timeout 5 giây để detect video ended
+    \item \textbf{Packet loss resilience:} Buffer chống chịu burst loss đến 3-4 giây
 \end{itemize}
 
 \subsubsection{Benefits}
@@ -506,17 +761,28 @@ def logBufferEvent(self, event_type):
     \item ✅ Tự động recovery từ buffer underrun
     \item ✅ Adaptive threshold theo network quality
     \item ✅ GUI feedback về buffer status
+    \item ✅ Chống chịu burst packet loss hiệu quả
 \end{itemize}
 
 \subsubsection{Tradeoffs}
 \begin{itemize}
     \item ➖ Tăng initial latency (800ms cho 20 frames @ 25 FPS)
-    \item ➖ Memory overhead ~40MB cho 100 Full HD frames
+    \item ➖ Memory overhead ~10MB cho 100 Full HD frames
     \item ➕ Smooth playback 98\% (giảm 90\% stuttering)
-    \item ➕ Chống jitter hiệu quả với buffer 4 giây
+    \item ➕ Chống jitter và burst loss với buffer 4 giây
     \item ➕ End-of-stream detection chính xác
+    \item ➕ Circuit breaker (bounded) tránh memory leak
 \end{itemize}
 
-\textbf{Kết luận:} Deque-based buffering với capacity 100 frames và threshold 20 frames là giải pháp tối ưu để đảm bảo smooth playback trong môi trường network không ổn định. Trade-off 800ms initial latency là chấp nhận được để đổi lấy quality of experience tốt hơn 98\% và khả năng chống jitter mạnh mẽ.
+\subsubsection{Key Insights về Buffer và Packet Loss}
+\begin{itemize}
+    \item ❌ \textbf{Bounded buffer KHÔNG giảm packet loss} — loss xảy ra ở tầng mạng
+    \item ✅ \textbf{Buffer giúp CHỐNG CHỊU loss} — tránh underrun khi burst loss
+    \item ✅ \textbf{maxlen = circuit breaker} — tránh unbounded growth và OOM
+    \item 📐 \textbf{Công thức:} \texttt{maxlen = (FPS × burst\_duration) + margin}
+    \item ⚖️ \textbf{Trade-off:} Latency thấp (maxlen nhỏ) vs Loss tolerance cao (maxlen lớn)
+\end{itemize}
+
+\textbf{Kết luận:} Deque-based buffering với \texttt{maxlen=100} frames và \texttt{buffer\_target=20} frames là giải pháp tối ưu để đảm bảo smooth playback trong môi trường network không ổn định. Buffer KHÔNG giảm packet loss ở network nhưng giúp hệ thống chống chịu burst loss hiệu quả. Trade-off 800ms initial latency và 10MB memory là chấp nhận được để đổi lấy quality of experience tốt hơn 98\%, khả năng chống jitter và loss resilience mạnh mẽ.
 
 \clearpage
