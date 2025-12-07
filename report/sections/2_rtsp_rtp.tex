@@ -7,6 +7,12 @@
 
 \textbf{Phần này chỉ bao gồm triển khai CƠ BẢN của giao thức RTSP và RTP, KHÔNG bao gồm các tính năng mở rộng như frame fragmentation cho HD video.}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{mermaid_diagram.png}
+    \caption{Sơ đồ tương tác RTSP/RTP giữa Client và Server}
+\end{figure}
+
 \subsection{RTSP Protocol - Client Side}
 
 \subsubsection{RTSP State Machine \& Constants}
@@ -616,7 +622,7 @@ def makeRtp(self, payload, frameNbr):
     padding = 0      # No padding
     extension = 0    # No extension
     cc = 0          # No CSRC
-    marker = 0      # Marker bit = 0 trong triển khai cơ bản
+    marker = 0      # Marker bit = 0 trong trien khai co ban
     pt = 26         # Payload Type: MJPEG (RFC 2435)
     seqnum = frameNbr
     ssrc = 0        # Synchronization source identifier
@@ -701,7 +707,7 @@ def sendRtp(self):
 \begin{itemize}
     \item RTP header 12 bytes theo RFC 3550
     \item \textbf{1 frame = 1 RTP packet} (không chia nhỏ frame)
-    \item Marker bit = 0 trong triển khai cơ bản
+    \item Marker bit = 0 trong trien khai co ban
     \item Sequence number tăng dần theo frame number
     \item UDP transmission với frame rate 25 FPS
     \item Session management với random Session ID
