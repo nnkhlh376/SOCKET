@@ -213,7 +213,7 @@ class ServerWorker:
             frame_elapsed = time.time() - frame_start
             frame_times.append(frame_elapsed)
             
-            time.sleep(0.04)
+            time.sleep(0.02)  # Server: 50 FPS sending rate, Client: 25 FPS playback (2:1 ratio)
             
             # Periodic stats report
             if time.time() - last_report_time > 10.0:  # Every 10 seconds
