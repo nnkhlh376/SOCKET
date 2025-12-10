@@ -368,8 +368,8 @@ class Client:
     
     def playFromBuffer(self):
         """Playback thread - lấy frames từ buffer và hiển thị"""
-        TARGET_FPS = 25
-        FRAME_DURATION = 1.0 / TARGET_FPS  # 0.04 seconds
+        TARGET_FPS = 50
+        FRAME_DURATION = 1.0 / TARGET_FPS  # 0.02 seconds
         empty_buffer_count = 0
         
         print("Starting playback from buffer...")
