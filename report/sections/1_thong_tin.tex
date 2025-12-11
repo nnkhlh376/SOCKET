@@ -1,0 +1,164 @@
+\section{Thông tin nhóm}
+-   Tên học phần: Mạng máy tính. \\
+-   Đồ án thực hiện: Lập trình Socket. \\
+-   Thời gian thực hiện: 23/11/2025 đến ngày 14/12/2025. \\
+-   Danh sách thành viên: \\
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|l|l|}
+\hline
+\textbf{STT} & \textbf{MSSV} & \textbf{Họ và tên} & \textbf{Vai trò} \\ \hline
+01           & 24127078      & Nguyễn Hữu Gia Minh     & Thành viên      \\ \hline
+02           & 24127197      & Nguyễn Khánh Linh       & Thành viên      \\ \hline
+03           & 24127505      & Trần Hoàng Phúc         & Nhóm trưởng     \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Thông tin đồ án}
+
+\subsection{Tổng quan đồ án}
+\begin{itemize}
+    \item \textbf{Yêu cầu:} Xây dựng một hệ thống trình phát video trực tuyến gồm client và server, sử dụng:
+    \begin{itemize}
+        \item \textbf{RTSP (Real-Time Streaming Protocol):} Giao thức điều khiển trên TCP
+        \item \textbf{RTP (Real-time Transport Protocol):} Giao thức truyền dữ liệu media trên UDP
+    \end{itemize}
+    \item \textbf{Mục đích:} Hiểu rõ về các giao thức mạng thời gian thực, quản lý trạng thái phiên kết nối, và kỹ thuật đóng gói (packetization) dữ liệu đa phương tiện.
+\end{itemize}
+
+\subsection{Mục tiêu}
+\begin{itemize}
+    \item Triển khai giao thức RTSP phía client để gửi các lệnh điều khiển (SETUP, PLAY, PAUSE, TEARDOWN).
+    \item Triển khai RTP packetization phía server để gửi video dạng MJPEG tới client.
+    \item Hiểu và quản lý trạng thái phiên RTSP.
+    \item Hỗ trợ HD Video Streaming và Client-Side Caching để cải thiện chất lượng phát video.
+\end{itemize}
+
+\subsection{Kiến trúc hệ thống}
+
+\subsubsection{Kênh điều khiển (RTSP)}
+\begin{itemize}
+    \item Sử dụng TCP để truyền các lệnh RTSP.
+    \item Port mặc định: 554 (TCP).
+    \item Client gửi các lệnh:
+    \begin{itemize}
+        \item \textbf{SETUP:} Thiết lập phiên kết nối và thông số transport.
+        \item \textbf{PLAY:} Bắt đầu phát video.
+        \item \textbf{PAUSE:} Tạm dừng phát video.
+        \item \textbf{TEARDOWN:} Kết thúc phiên kết nối.
+    \end{itemize}
+    \item Mỗi lệnh RTSP phải kèm CSeq header (số thứ tự lệnh) và Session header (mã phiên) nếu cần.
+\end{itemize}
+
+\subsubsection{Kênh dữ liệu (RTP)}
+\begin{itemize}
+    \item Sử dụng UDP để truyền dữ liệu video.
+    \item Server thực hiện RTP packetization:
+    \begin{itemize}
+        \item Header gồm các trường: V, P, X, CC, M, PT, Sequence Number, Timestamp, SSRC.
+        \item Payload là dữ liệu video MJPEG.
+    \end{itemize}
+    \item Client nhận RTP packet và giải mã để hiển thị video.
+\end{itemize}
+
+\subsubsection{Client}
+\begin{itemize}
+    \item Client cần triển khai hành vi khi người dùng nhấn các nút điều khiển:
+    \begin{itemize}
+        \item Mở kết nối RTSP với server khi khởi động.
+        \item Gửi và nhận các lệnh RTSP.
+        \item Quản lý trạng thái phiên (INIT, READY, PLAYING).
+        \item Nhận và hiển thị dữ liệu RTP.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Server}
+\begin{itemize}
+    \item Server đọc video MJPEG từ file và gửi từng frame dưới dạng RTP packet.
+    \item Server phản hồi tất cả các lệnh RTSP từ client (200 OK, 404 FILE\_NOT\_FOUND, 500 CONNECTION\_ERROR).
+    \item RTP packetization:
+    \begin{itemize}
+        \item V = 2, P = X = CC = M = 0, PT = 26 (MJPEG), Sequence Number theo frame, Timestamp từ Python time module, SSRC tự chọn.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Yêu cầu kỹ thuật}
+
+\subsubsection{PHẦN 1: Triển khai RTSP Client (4 điểm)}
+
+\begin{itemize}
+    \item Triển khai 4 lệnh RTSP: SETUP, PLAY, PAUSE, TEARDOWN
+    \item Quản lý state machine: INIT → READY → PLAYING
+    \item Xử lý CSeq (sequence number) và Session ID
+    \item Tạo UDP socket để nhận RTP packets
+\end{itemize}
+
+\textbf{Format RTSP Request:}
+\begin{verbatim}
+<METHOD> <video_file> RTSP/1.0
+CSeq: <sequence_number>
+[Session: <session_id>]
+[Transport: RTP/UDP; client_port=<port>]
+\end{verbatim}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    state/.style={rectangle, draw, minimum width=2cm, minimum height=1cm, align=center},
+    arrow/.style={->, thick}
+]
+    \node[state] (init1) {INIT};
+    \node[state, below=2cm of init1] (ready) {READY};
+    \node[state, below=2cm of ready] (playing) {PLAYING};
+    \node[state, below=2cm of playing] (init2) {INIT};
+    
+    \draw[arrow] (init1) -- node[right] {SETUP} (ready);
+    \draw[arrow] (ready) -- node[right] {PLAY} (playing);
+    \draw[arrow] (playing) to[bend left=45] node[left] {PAUSE} (ready);
+    \draw[arrow] (ready) to[bend left=45] node[right] {} (playing);
+    \draw[arrow] (playing) -- node[right] {TEARDOWN} (init2);
+\end{tikzpicture}
+\caption{RTSP Client State Machine}
+\end{figure}
+
+\subsubsection{PHẦN 2: Triển khai RTP Server}
+
+\begin{itemize}
+    \item Hoàn thiện phương thức \texttt{encode()} trong class \texttt{RtpPacket}
+    \item Đóng gói video frame vào RTP packet (Header 12 bytes + Payload)
+    \item Thiết lập các trường: V=2, PT=26 (MJPEG), Sequence Number, Timestamp, SSRC
+    \item Gửi packet qua UDP mỗi 50ms (20 FPS)
+\end{itemize}
+
+\textbf{RTP Header Format (12 bytes):}
+\begin{verbatim}
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|V=2|P|X|  CC   |M|     PT      |       Sequence Number         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Timestamp                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             SSRC                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{verbatim}
+
+\subsubsection{PHẦN 3: HD Video Streaming (3 điểm)}
+
+\begin{itemize}
+    \item \textbf{Frame Fragmentation:} Chia frame HD (>100KB) thành packets $\leq$ 1450 bytes
+    \item \textbf{Adaptive Control:} Điều chỉnh frame rate dựa vào network conditions
+    \item \textbf{Network Analysis:} Monitor packet loss rate và bandwidth usage
+    \item Hỗ trợ video 720p/1080p với MJPEG format chuẩn (delimiters 0xFF 0xD8/0xFF 0xD9)
+\end{itemize}
+
+\subsubsection{PHẦN 4: Client-Side Caching (2.5 điểm)}
+
+\begin{itemize}
+    \item \textbf{Pre-buffering:} Buffer N frames (30-100) trước khi cho phép PLAY
+    \item \textbf{Buffer Management:} Sử dụng deque, xử lý overflow/underflow
+    \item \textbf{Smooth Playback:} Giảm jitter, hiển thị buffer status trên GUI
+    \item Cải thiện trải nghiệm khi network không ổn định
+\end{itemize}
+
+\clearpage

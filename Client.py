@@ -2,7 +2,7 @@ from tkinter import *
 import tkinter.messagebox as tkMessageBox
 from tkinter import ttk
 from PIL import Image, ImageTk
-import socket, threading, os
+import socket, threading, os, errno 
 from RtpPacket import RtpPacket
 import time 
 from collections import deque
@@ -29,7 +29,7 @@ class Client:
         self.createWidgets()
         
         self.serverAddr = serveraddr
-        self.serverPort = int(serverport)
+        self.serverPort = int(serverport) 
         self.rtpPort = int(rtpport)
         self.fileName = filename
         self.rtspSeq = 0
@@ -43,7 +43,7 @@ class Client:
         self.last_timestamp = -1
         
         # Frame buffer for smooth playback
-        self.frame_buffer = deque(maxlen=100)  # Buffer tối đa 100 frames
+        self.frame_buffer = deque(maxlen=200)  # Buffer tối đa 200 frames
         self.buffer_target = 20  # Đệm 20 frames trước khi play (nhanh hơn)
         self.buffering = False
         self.buffer_lock = threading.Lock()
@@ -60,7 +60,8 @@ class Client:
         # Performance tracking
         self.frame_receive_start = None
         self.frame_assembly_times = []
-        
+        # Socket error tracking
+        self.socket_buffer_overflows = 0 
         self.connectToServer()
     
     def createWidgets(self):
@@ -295,7 +296,18 @@ class Client:
                             # Có thể đã hết video
                             pass
                 continue
-            except Exception as e:
+            except socket.error as e:
+                # Detect socket buffer overflow
+                import errno
+                if hasattr(e, 'errno'):
+                    if e.errno == errno.ENOBUFS or e.errno == errno.ENOMEM:
+                        self.socket_buffer_overflows += 1
+                        print(f"Socket Buffer Overflows: {self.socket_buffer_overflows}")
+                        print("⚠ WARNING: Socket buffer overflow - packets dropped!")
+                        print("   → Consider: reduce bitrate or increase SO_RCVBUF")
+                    elif e.errno == errno.ECONNRESET:
+                        print("⚠ Connection reset by peer")
+                
                 if self.playEvent.isSet():
                     break
                 if self.teardownAcked == 1:
@@ -304,6 +316,12 @@ class Client:
                         self.rtpSocket.close()
                     except:
                         pass
+                    break
+            
+            except Exception as e:
+                # Catch-all cho các exceptions khác
+                print(f"⚠ Unexpected error in listenRtp: {type(e).__name__}: {e}")
+                if self.playEvent.isSet():
                     break
     
     def updateStatsDisplay(self):
@@ -528,6 +546,8 @@ class Client:
         try:
             self.rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.rtpSocket.settimeout(0.5)
+            # Tăng socket receive buffer để tránh packet loss
+            self.rtpSocket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2 * 1024 * 1024)  # 2 MB (thay vì mặc định ~64KB)
             self.rtpSocket.bind(('', self.rtpPort))
         except Exception as e:
             tkMessageBox.showwarning('Unable to Bind', 'Unable to bind PORT=%d' %self.rtpPort)
