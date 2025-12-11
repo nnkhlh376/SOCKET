@@ -44,7 +44,7 @@ class Client:
         
         # Frame buffer for smooth playback
         self.frame_buffer = deque(maxlen=200)  # Buffer tối đa 200 frames
-        self.buffer_target = 20  # Đệm 20 frames trước khi play (nhanh hơn)
+        self.buffer_target = 50  # Đệm 50 frames trước khi play (ổn định FPS từ đầu)
         self.buffering = False
         self.buffer_lock = threading.Lock()
         

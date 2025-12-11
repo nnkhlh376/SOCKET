@@ -131,7 +131,7 @@ class ServerWorker:
     
     def prebufferFrames(self):
         """Gửi frames để client buffer trước khi PLAY"""
-        PREBUFFER_COUNT = 30  # Gửi 30 frames
+        PREBUFFER_COUNT = 60  # Gửi 60 frames (tương ứng với buffer_target 50 + dự phòng)
         
         print(f"Pre-buffering {PREBUFFER_COUNT} frames...")
         
@@ -154,8 +154,8 @@ class ServerWorker:
                 
                 self.splitAndSendFrame(data, frameNumber, address, port)
                 
-                # Gửi nhanh hơn playback bình thường (50 FPS)
-                time.sleep(0.02)
+                # Gửi nhanh để fill buffer nhanh (0.01s = 100 FPS tạm thời)
+                time.sleep(0.01)
                 
             except Exception as e:
                 print(f"Pre-buffer error: {e}")
