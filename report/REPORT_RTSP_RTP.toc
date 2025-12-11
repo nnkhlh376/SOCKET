@@ -9,109 +9,114 @@
 \contentsline {subsubsection}{\numberline {2.3.3}Client}{5}{subsubsection.2.3.3}%
 \contentsline {subsubsection}{\numberline {2.3.4}Server}{5}{subsubsection.2.3.4}%
 \contentsline {subsection}{\numberline {2.4}Yêu cầu kỹ thuật}{5}{subsection.2.4}%
-\contentsline {subsubsection}{\numberline {2.4.1}PHẦN 1: Triển khai Client}{5}{subsubsection.2.4.1}%
-\contentsline {paragraph}{A. Các Module}{5}{section*.2}%
-\contentsline {paragraph}{B. Triển Khai RTSP Commands}{5}{section*.3}%
-\contentsline {paragraph}{1. Lệnh SETUP}{6}{section*.4}%
-\contentsline {paragraph}{2. Lệnh PLAY}{6}{section*.5}%
-\contentsline {paragraph}{3. Lệnh PAUSE}{6}{section*.6}%
-\contentsline {paragraph}{4. Lệnh TEARDOWN}{6}{section*.7}%
-\contentsline {section}{\numberline {3}Triển khai giao thức RTSP ở Client và đóng gói RTP ở Server (4 điểm)}{9}{section.3}%
-\contentsline {subsection}{\numberline {3.1}RTSP Protocol - Client Side}{9}{subsection.3.1}%
-\contentsline {subsubsection}{\numberline {3.1.1}RTSP State Machine \& Constants}{9}{subsubsection.3.1.1}%
-\contentsline {subsubsection}{\numberline {3.1.2}Gửi RTSP Requests}{9}{subsubsection.3.1.2}%
-\contentsline {paragraph}{Hàm sendRtspRequest()}{9}{section*.8}%
-\contentsline {subsubsection}{\numberline {3.1.3}Nhận RTSP Responses}{11}{subsubsection.3.1.3}%
-\contentsline {paragraph}{Hàm recvRtspReply()}{11}{section*.9}%
-\contentsline {paragraph}{Hàm parseRtspReply()}{11}{section*.10}%
-\contentsline {subsubsection}{\numberline {3.1.4}Kết nối RTSP \& RTP}{12}{subsubsection.3.1.4}%
-\contentsline {subsection}{\numberline {3.2}RTP Encoding - Server Side}{13}{subsection.3.2}%
-\contentsline {subsubsection}{\numberline {3.2.1}RTP Header Structure}{13}{subsubsection.3.2.1}%
-\contentsline {paragraph}{Header Layout (RFC 3550)}{13}{section*.11}%
-\contentsline {subsubsection}{\numberline {3.2.2}Field Definitions}{14}{subsubsection.3.2.2}%
-\contentsline {subsubsection}{\numberline {3.2.3}Decode RTP Packets}{14}{subsubsection.3.2.3}%
-\contentsline {subsubsection}{\numberline {3.2.4}Tạo RTP Packets (Cơ bản)}{15}{subsubsection.3.2.4}%
-\contentsline {subsubsection}{\numberline {3.2.5}Gửi RTP Packets (Cơ bản)}{15}{subsubsection.3.2.5}%
-\contentsline {subsubsection}{\numberline {3.2.6}Xử lý RTSP Requests}{16}{subsubsection.3.2.6}%
-\contentsline {subsection}{\numberline {3.3}Tóm tắt triển khai RTSP/RTP cơ bản}{18}{subsection.3.3}%
-\contentsline {subsubsection}{\numberline {3.3.1}RTSP Client}{18}{subsubsection.3.3.1}%
-\contentsline {subsubsection}{\numberline {3.3.2}RTP Server}{19}{subsubsection.3.3.2}%
-\contentsline {section}{\numberline {4}HD Video Streaming và Frame Fragmentation (3 điểm)}{20}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Vấn đề với UDP MTU}{20}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Frame Fragmentation Strategy}{20}{subsection.4.2}%
-\contentsline {subsubsection}{\numberline {4.2.1}Thiết kế giải pháp}{20}{subsubsection.4.2.1}%
-\contentsline {subsubsection}{\numberline {4.2.2}Marker Bit Usage}{21}{subsubsection.4.2.2}%
-\contentsline {subsection}{\numberline {4.3}Server-Side Fragmentation}{21}{subsection.4.3}%
-\contentsline {subsubsection}{\numberline {4.3.1}makeRtp() - HD Version}{21}{subsubsection.4.3.1}%
-\contentsline {subsubsection}{\numberline {4.3.2}sendRtp() - HD Version}{21}{subsubsection.4.3.2}%
-\contentsline {subsection}{\numberline {4.4}Client-Side Reassembly}{23}{subsection.4.4}%
-\contentsline {subsubsection}{\numberline {4.4.1}listenRtp() - HD Version}{23}{subsubsection.4.4.1}%
-\contentsline {subsubsection}{\numberline {4.4.2}Xử lý packet loss}{25}{subsubsection.4.4.2}%
-\contentsline {subsection}{\numberline {4.5}Ví dụ Frame Fragmentation}{25}{subsection.4.5}%
-\contentsline {subsection}{\numberline {4.6}Performance Metrics}{26}{subsection.4.6}%
-\contentsline {subsubsection}{\numberline {4.6.1}Bandwidth Calculation}{26}{subsubsection.4.6.1}%
-\contentsline {subsection}{\numberline {4.7}So sánh triển khai Basic vs HD}{26}{subsection.4.7}%
-\contentsline {subsection}{\numberline {4.8}Network Analysis và Packet Loss Detection}{26}{subsection.4.8}%
-\contentsline {subsubsection}{\numberline {4.8.1}Nguyên nhân Packet Loss}{26}{subsubsection.4.8.1}%
-\contentsline {subsubsection}{\numberline {4.8.2}Cách đo Packet Loss}{27}{subsubsection.4.8.2}%
-\contentsline {subsubsection}{\numberline {4.8.3}Socket Buffer Optimization}{28}{subsubsection.4.8.3}%
-\contentsline {subsubsection}{\numberline {4.8.4}Socket Error Monitoring}{28}{subsubsection.4.8.4}%
-\contentsline {subsubsection}{\numberline {4.8.5}Kết quả Network Analysis}{29}{subsubsection.4.8.5}%
-\contentsline {subsection}{\numberline {4.9}Tóm tắt HD Video Streaming}{29}{subsection.4.9}%
-\contentsline {subsubsection}{\numberline {4.9.1}Fragmentation Strategy}{29}{subsubsection.4.9.1}%
-\contentsline {subsubsection}{\numberline {4.9.2}Network Analysis}{29}{subsubsection.4.9.2}%
-\contentsline {subsubsection}{\numberline {4.9.3}Key Implementation Points}{29}{subsubsection.4.9.3}%
-\contentsline {subsubsection}{\numberline {4.9.4}Performance Metrics}{30}{subsubsection.4.9.4}%
-\contentsline {subsubsection}{\numberline {4.9.5}Trade-offs}{30}{subsubsection.4.9.5}%
-\contentsline {section}{\numberline {5}Client-Side Buffer và Pre-Buffering (2.5 điểm)}{31}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Vấn đề Jitter và Network Variation}{31}{subsection.5.1}%
-\contentsline {subsubsection}{\numberline {5.1.1}Network Jitter}{31}{subsubsection.5.1.1}%
-\contentsline {subsubsection}{\numberline {5.1.2}Buffer Solution}{31}{subsubsection.5.1.2}%
-\contentsline {subsection}{\numberline {5.2}Buffer Architecture}{31}{subsection.5.2}%
-\contentsline {subsubsection}{\numberline {5.2.1}Deque-Based Design}{31}{subsubsection.5.2.1}%
-\contentsline {paragraph}{Giải thích từng thành phần:}{32}{section*.12}%
-\contentsline {subsubsection}{\numberline {5.2.2}Buffer States}{33}{subsubsection.5.2.2}%
-\contentsline {subsection}{\numberline {5.3}Reception Thread}{33}{subsection.5.3}%
-\contentsline {subsubsection}{\numberline {5.3.1}listenRtp() với Buffer}{33}{subsubsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.4}Playback Thread}{35}{subsection.5.4}%
-\contentsline {subsubsection}{\numberline {5.4.1}playFromBuffer()}{35}{subsubsection.5.4.1}%
-\contentsline {subsubsection}{\numberline {5.4.2}Buffer Underrun Handling}{36}{subsubsection.5.4.2}%
-\contentsline {subsection}{\numberline {5.5}GUI Integration}{37}{subsection.5.5}%
-\contentsline {subsubsection}{\numberline {5.5.1}Buffer Status Display}{37}{subsubsection.5.5.1}%
-\contentsline {subsection}{\numberline {5.6}Playback Control}{38}{subsection.5.6}%
-\contentsline {subsubsection}{\numberline {5.6.1}Start/Stop Playback}{38}{subsubsection.5.6.1}%
-\contentsline {subsubsection}{\numberline {5.6.2}Integration với RTSP Controls}{38}{subsubsection.5.6.2}%
-\contentsline {subsection}{\numberline {5.7}Advanced Buffer Strategies}{39}{subsection.5.7}%
-\contentsline {subsubsection}{\numberline {5.7.1}Adaptive Buffer Threshold}{39}{subsubsection.5.7.1}%
-\contentsline {subsection}{\numberline {5.8}Performance Comparison}{40}{subsection.5.8}%
-\contentsline {subsection}{\numberline {5.9}Buffer Monitoring}{40}{subsection.5.9}%
-\contentsline {subsubsection}{\numberline {5.9.1}Real-time Statistics}{40}{subsubsection.5.9.1}%
-\contentsline {subsection}{\numberline {5.10}Buffer Size và Packet Loss Resilience}{41}{subsection.5.10}%
-\contentsline {subsubsection}{\numberline {5.10.1}Mối quan hệ giữa Buffer và Packet Loss}{41}{subsubsection.5.10.1}%
-\contentsline {subsubsection}{\numberline {5.10.2}Bounded vs Unbounded Deque}{41}{subsubsection.5.10.2}%
-\contentsline {subsubsection}{\numberline {5.10.3}Tại sao Buffer Size quan trọng?}{42}{subsubsection.5.10.3}%
-\contentsline {subsubsection}{\numberline {5.10.4}Công thức tính Buffer Size tối ưu}{42}{subsubsection.5.10.4}%
-\contentsline {subsubsection}{\numberline {5.10.5}Trade-off Analysis}{43}{subsubsection.5.10.5}%
-\contentsline {subsubsection}{\numberline {5.10.6}Monitoring và Auto-tuning}{43}{subsubsection.5.10.6}%
-\contentsline {subsection}{\numberline {5.11}Tóm tắt Client-Side Buffer}{44}{subsection.5.11}%
-\contentsline {subsubsection}{\numberline {5.11.1}Components}{44}{subsubsection.5.11.1}%
-\contentsline {subsubsection}{\numberline {5.11.2}Benefits}{44}{subsubsection.5.11.2}%
-\contentsline {subsubsection}{\numberline {5.11.3}Tradeoffs}{44}{subsubsection.5.11.3}%
-\contentsline {subsubsection}{\numberline {5.11.4}Key Insights về Buffer và Packet Loss}{44}{subsubsection.5.11.4}%
-\contentsline {section}{\numberline {6}Kết luận}{46}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Tổng kết kết quả}{46}{subsection.6.1}%
-\contentsline {subsection}{\numberline {6.2}Thách thức và giải pháp}{46}{subsection.6.2}%
-\contentsline {subsubsection}{\numberline {6.2.1}UDP MTU Limitation}{46}{subsubsection.6.2.1}%
-\contentsline {subsubsection}{\numberline {6.2.2}Network Jitter}{47}{subsubsection.6.2.2}%
-\contentsline {subsubsection}{\numberline {6.2.3}Packet Loss}{47}{subsubsection.6.2.3}%
-\contentsline {subsection}{\numberline {6.3}Kết quả đạt được}{48}{subsection.6.3}%
-\contentsline {subsubsection}{\numberline {6.3.1}Technical Metrics}{48}{subsubsection.6.3.1}%
-\contentsline {subsubsection}{\numberline {6.3.2}User Experience}{48}{subsubsection.6.3.2}%
-\contentsline {subsection}{\numberline {6.4}Hướng phát triển}{48}{subsection.6.4}%
-\contentsline {subsubsection}{\numberline {6.4.1}Short-term Improvements}{48}{subsubsection.6.4.1}%
-\contentsline {subsubsection}{\numberline {6.4.2}Long-term Enhancements}{49}{subsubsection.6.4.2}%
-\contentsline {subsection}{\numberline {6.5}Bài học kinh nghiệm}{49}{subsection.6.5}%
-\contentsline {subsubsection}{\numberline {6.5.1}Network Programming}{49}{subsubsection.6.5.1}%
-\contentsline {subsubsection}{\numberline {6.5.2}Protocol Design}{49}{subsubsection.6.5.2}%
-\contentsline {subsubsection}{\numberline {6.5.3}Performance Optimization}{49}{subsubsection.6.5.3}%
-\contentsline {subsection}{\numberline {6.6}Kết luận}{50}{subsection.6.6}%
+\contentsline {subsubsection}{\numberline {2.4.1}PHẦN 1: Triển khai RTSP Client (4 điểm)}{5}{subsubsection.2.4.1}%
+\contentsline {subsubsection}{\numberline {2.4.2}PHẦN 2: Triển khai RTP Server}{6}{subsubsection.2.4.2}%
+\contentsline {subsubsection}{\numberline {2.4.3}PHẦN 3: HD Video Streaming (3 điểm)}{7}{subsubsection.2.4.3}%
+\contentsline {subsubsection}{\numberline {2.4.4}PHẦN 4: Client-Side Caching (2.5 điểm)}{7}{subsubsection.2.4.4}%
+\contentsline {section}{\numberline {3}Triển khai giao thức RTSP ở Client và đóng gói RTP ở Server (4 điểm)}{8}{section.3}%
+\contentsline {subsection}{\numberline {3.1}RTSP Protocol - Client Side}{8}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}RTSP State Machine \& Constants}{8}{subsubsection.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.1.2}Khởi tạo Client \& Kết nối RTSP}{9}{subsubsection.3.1.2}%
+\contentsline {subsubsection}{\numberline {3.1.3}Gửi RTSP Requests}{9}{subsubsection.3.1.3}%
+\contentsline {paragraph}{Hàm sendRtspRequest()}{9}{section*.2}%
+\contentsline {subsubsection}{\numberline {3.1.4}Nhận RTSP Responses}{11}{subsubsection.3.1.4}%
+\contentsline {paragraph}{Hàm recvRtspReply()}{11}{section*.3}%
+\contentsline {paragraph}{Hàm parseRtspReply()}{11}{section*.4}%
+\contentsline {subsection}{\numberline {3.2}RTSP Protocol - Server Side}{12}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Khởi tạo Server \& Bind RTSP Port}{12}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Nhận RTSP Requests}{13}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Xử lý RTSP Requests}{14}{subsubsection.3.2.3}%
+\contentsline {paragraph}{Hàm processRtspRequest()}{14}{section*.5}%
+\contentsline {subsubsection}{\numberline {3.2.4}Gửi RTSP Responses}{15}{subsubsection.3.2.4}%
+\contentsline {paragraph}{Hàm replyRtsp()}{15}{section*.6}%
+\contentsline {subsection}{\numberline {3.3}RTP Packets}{16}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}RTP Header Structure}{16}{subsubsection.3.3.1}%
+\contentsline {paragraph}{Header Layout (RFC 3550)}{16}{section*.7}%
+\contentsline {subsubsection}{\numberline {3.3.2}Field Definitions}{16}{subsubsection.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.3}Encode RTP Packets}{17}{subsubsection.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.4}Khởi tạo RTP Socket (Client Side)}{18}{subsubsection.3.3.4}%
+\contentsline {subsubsection}{\numberline {3.3.5}Decode RTP Packets}{18}{subsubsection.3.3.5}%
+\contentsline {subsubsection}{\numberline {3.3.6}Tạo RTP Packets (Cơ bản)}{19}{subsubsection.3.3.6}%
+\contentsline {subsubsection}{\numberline {3.3.7}Gửi RTP Packets (Cơ bản)}{20}{subsubsection.3.3.7}%
+\contentsline {subsection}{\numberline {3.4}Tóm tắt triển khai RTSP/RTP cơ bản}{21}{subsection.3.4}%
+\contentsline {subsubsection}{\numberline {3.4.1}RTSP Client}{21}{subsubsection.3.4.1}%
+\contentsline {subsubsection}{\numberline {3.4.2}RTP Server}{21}{subsubsection.3.4.2}%
+\contentsline {section}{\numberline {4}HD Video Streaming và Frame Fragmentation (3 điểm)}{23}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Vấn đề với UDP MTU}{23}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Frame Fragmentation Strategy}{23}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}Thiết kế giải pháp}{23}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}Marker Bit Usage}{24}{subsubsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.3}Server-Side Fragmentation}{24}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}makeRtp() - HD Version}{24}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}sendRtp() - HD Version}{24}{subsubsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.4}Client-Side Reassembly}{26}{subsection.4.4}%
+\contentsline {subsubsection}{\numberline {4.4.1}listenRtp() - HD Version}{26}{subsubsection.4.4.1}%
+\contentsline {subsubsection}{\numberline {4.4.2}Xử lý packet loss}{28}{subsubsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.5}Ví dụ Frame Fragmentation}{28}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}Performance Metrics}{29}{subsection.4.6}%
+\contentsline {subsubsection}{\numberline {4.6.1}Bandwidth Calculation}{29}{subsubsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.7}So sánh triển khai Basic vs HD}{29}{subsection.4.7}%
+\contentsline {subsection}{\numberline {4.8}Network Analysis và Packet Loss Detection}{29}{subsection.4.8}%
+\contentsline {subsubsection}{\numberline {4.8.1}Nguyên nhân Packet Loss}{29}{subsubsection.4.8.1}%
+\contentsline {subsubsection}{\numberline {4.8.2}Cách đo Packet Loss}{30}{subsubsection.4.8.2}%
+\contentsline {subsubsection}{\numberline {4.8.3}Socket Buffer Optimization}{31}{subsubsection.4.8.3}%
+\contentsline {subsubsection}{\numberline {4.8.4}Socket Error Monitoring}{31}{subsubsection.4.8.4}%
+\contentsline {subsubsection}{\numberline {4.8.5}Kết quả Network Analysis}{32}{subsubsection.4.8.5}%
+\contentsline {subsection}{\numberline {4.9}Tóm tắt HD Video Streaming}{32}{subsection.4.9}%
+\contentsline {subsubsection}{\numberline {4.9.1}Fragmentation Strategy}{32}{subsubsection.4.9.1}%
+\contentsline {subsubsection}{\numberline {4.9.2}Network Analysis}{32}{subsubsection.4.9.2}%
+\contentsline {subsubsection}{\numberline {4.9.3}Key Implementation Points}{32}{subsubsection.4.9.3}%
+\contentsline {subsubsection}{\numberline {4.9.4}Performance Metrics}{33}{subsubsection.4.9.4}%
+\contentsline {subsubsection}{\numberline {4.9.5}Trade-offs}{33}{subsubsection.4.9.5}%
+\contentsline {section}{\numberline {5}Client-Side Buffer và Pre-Buffering (2.5 điểm)}{34}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Vấn đề Jitter và Network Variation}{34}{subsection.5.1}%
+\contentsline {subsubsection}{\numberline {5.1.1}Network Jitter}{34}{subsubsection.5.1.1}%
+\contentsline {subsubsection}{\numberline {5.1.2}Buffer Solution}{34}{subsubsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.2}Buffer Architecture}{34}{subsection.5.2}%
+\contentsline {subsubsection}{\numberline {5.2.1}Deque-Based Design}{34}{subsubsection.5.2.1}%
+\contentsline {paragraph}{Giải thích từng thành phần:}{35}{section*.8}%
+\contentsline {subsubsection}{\numberline {5.2.2}Buffer States}{36}{subsubsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.3}Reception Thread}{36}{subsection.5.3}%
+\contentsline {subsubsection}{\numberline {5.3.1}listenRtp() với Buffer}{36}{subsubsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.4}Playback Thread}{38}{subsection.5.4}%
+\contentsline {subsubsection}{\numberline {5.4.1}playFromBuffer()}{38}{subsubsection.5.4.1}%
+\contentsline {subsubsection}{\numberline {5.4.2}Buffer Underrun Handling}{39}{subsubsection.5.4.2}%
+\contentsline {subsection}{\numberline {5.5}GUI Integration}{40}{subsection.5.5}%
+\contentsline {subsubsection}{\numberline {5.5.1}Buffer Status Display}{40}{subsubsection.5.5.1}%
+\contentsline {subsection}{\numberline {5.6}Playback Control}{41}{subsection.5.6}%
+\contentsline {subsubsection}{\numberline {5.6.1}Start/Stop Playback}{41}{subsubsection.5.6.1}%
+\contentsline {subsubsection}{\numberline {5.6.2}Integration với RTSP Controls}{41}{subsubsection.5.6.2}%
+\contentsline {subsection}{\numberline {5.7}Advanced Buffer Strategies}{42}{subsection.5.7}%
+\contentsline {subsubsection}{\numberline {5.7.1}Adaptive Buffer Threshold}{42}{subsubsection.5.7.1}%
+\contentsline {subsection}{\numberline {5.8}Performance Comparison}{43}{subsection.5.8}%
+\contentsline {subsection}{\numberline {5.9}Buffer Monitoring}{43}{subsection.5.9}%
+\contentsline {subsubsection}{\numberline {5.9.1}Real-time Statistics}{43}{subsubsection.5.9.1}%
+\contentsline {subsection}{\numberline {5.10}Buffer Size và Packet Loss Resilience}{44}{subsection.5.10}%
+\contentsline {subsubsection}{\numberline {5.10.1}Mối quan hệ giữa Buffer và Packet Loss}{44}{subsubsection.5.10.1}%
+\contentsline {subsubsection}{\numberline {5.10.2}Bounded vs Unbounded Deque}{44}{subsubsection.5.10.2}%
+\contentsline {subsubsection}{\numberline {5.10.3}Tại sao Buffer Size quan trọng?}{45}{subsubsection.5.10.3}%
+\contentsline {subsubsection}{\numberline {5.10.4}Công thức tính Buffer Size tối ưu}{45}{subsubsection.5.10.4}%
+\contentsline {subsubsection}{\numberline {5.10.5}Trade-off Analysis}{46}{subsubsection.5.10.5}%
+\contentsline {subsubsection}{\numberline {5.10.6}Monitoring và Auto-tuning}{46}{subsubsection.5.10.6}%
+\contentsline {subsection}{\numberline {5.11}Tóm tắt Client-Side Buffer}{47}{subsection.5.11}%
+\contentsline {subsubsection}{\numberline {5.11.1}Components}{47}{subsubsection.5.11.1}%
+\contentsline {subsubsection}{\numberline {5.11.2}Benefits}{47}{subsubsection.5.11.2}%
+\contentsline {subsubsection}{\numberline {5.11.3}Tradeoffs}{47}{subsubsection.5.11.3}%
+\contentsline {subsubsection}{\numberline {5.11.4}Key Insights về Buffer và Packet Loss}{47}{subsubsection.5.11.4}%
+\contentsline {section}{\numberline {6}Kết luận}{49}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Tổng kết kết quả}{49}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Thách thức và giải pháp}{49}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}UDP MTU Limitation}{49}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}Network Jitter}{50}{subsubsection.6.2.2}%
+\contentsline {subsubsection}{\numberline {6.2.3}Packet Loss}{50}{subsubsection.6.2.3}%
+\contentsline {subsection}{\numberline {6.3}Kết quả đạt được}{51}{subsection.6.3}%
+\contentsline {subsubsection}{\numberline {6.3.1}Technical Metrics}{51}{subsubsection.6.3.1}%
+\contentsline {subsubsection}{\numberline {6.3.2}User Experience}{51}{subsubsection.6.3.2}%
+\contentsline {subsection}{\numberline {6.4}Hướng phát triển}{51}{subsection.6.4}%
+\contentsline {subsubsection}{\numberline {6.4.1}Short-term Improvements}{51}{subsubsection.6.4.1}%
+\contentsline {subsubsection}{\numberline {6.4.2}Long-term Enhancements}{52}{subsubsection.6.4.2}%
+\contentsline {subsection}{\numberline {6.5}Bài học kinh nghiệm}{52}{subsection.6.5}%
+\contentsline {subsubsection}{\numberline {6.5.1}Network Programming}{52}{subsubsection.6.5.1}%
+\contentsline {subsubsection}{\numberline {6.5.2}Protocol Design}{52}{subsubsection.6.5.2}%
+\contentsline {subsubsection}{\numberline {6.5.3}Performance Optimization}{52}{subsubsection.6.5.3}%
+\contentsline {subsection}{\numberline {6.6}Kết luận}{53}{subsection.6.6}%
