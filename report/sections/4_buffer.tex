@@ -57,8 +57,8 @@ class Client:
         # ... other initializations ...
         
         # BUFFER COMPONENTS
-        self.frame_buffer = deque(maxlen=100)
-        self.buffer_target = 20
+        self.frame_buffer = deque(maxlen=200)
+        self.buffer_target = 50
         self.buffering = False
         self.buffer_lock = threading.Lock()
         
@@ -83,19 +83,19 @@ class Client:
 
 \textbf{2. Buffer Components:}
 \begin{itemize}
-    \item \texttt{frame\_buffer = deque(maxlen=100)}:
+    \item \texttt{frame\_buffer = deque(maxlen=200)}:
     \begin{itemize}
         \item Tạo deque làm buffer chứa frames
-        \item \texttt{maxlen=100}: Tối đa 100 frames
+        \item \texttt{maxlen=200}: Tối đa 200 frames (tăng từ 100)
         \item Khi đầy, thêm frame mới $\rightarrow$ frame cũ nhất tự động bị pop (circular buffer)
-        \item Với 25 FPS: 100 frames $\approx$ 4 giây video được đệm
+        \item Với 50 FPS: 200 frames $\approx$ 4 giây video được đệm
     \end{itemize}
     
-    \item \texttt{buffer\_target = 20}:
+    \item \texttt{buffer\_target = 50}:
     \begin{itemize}
-        \item Mục tiêu pre-buffer: phải có ít nhất 20 frames mới bắt đầu phát
-        \item 20 frames $\approx$ 0.8 giây (với 25 FPS)
-        \item Giúp hấp thụ jitter mạng hiệu quả
+        \item Mục tiêu pre-buffer: phải có ít nhất 50 frames mới bắt đầu phát (tăng từ 20)
+        \item 50 frames $\approx$ 1 giây (với 50 FPS)
+        \item Giúp ổn định FPS từ đầu và hấp thụ jitter mạng hiệu quả hơn
     \end{itemize}
     
     \item \texttt{buffering = False}:
@@ -244,11 +244,11 @@ def listenRtp(self):
 
 \subsubsection{playFromBuffer()}
 
-\begin{lstlisting}[language=Python, caption={Playback Thread with Buffer Management}]
+\begin{lstlisting}[language=Python, caption={Playback Thread with Buffer Management (50 FPS)}]
 def playFromBuffer(self):
     """Playback thread - lay frames tu buffer va hien thi"""
-    TARGET_FPS = 25
-    FRAME_DURATION = 1.0 / TARGET_FPS  # 0.04 seconds
+    TARGET_FPS = 50  # Tang tu 25 FPS
+    FRAME_DURATION = 1.0 / TARGET_FPS  # 0.02 seconds
     empty_buffer_count = 0
     
     print("Starting playback from buffer...")
@@ -357,6 +357,77 @@ with self.buffer_lock:
     \item Nếu empty > 5s: kết luận end of stream
     \item Hiển thị thông báo "Video ended" cho user
     \item Dừng playback thread
+\end{enumerate}
+
+\subsection{Server-Side Pre-buffering Optimization}
+
+\subsubsection{Fast Initial Buffer Fill}
+
+Để đảm bảo FPS ổn định ngay từ đầu, server gửi pre-buffer với tốc độ cao hơn:
+
+\begin{lstlisting}[language=Python, caption={Server Pre-buffering Strategy}]
+def prebufferFrames(self):
+    """Gui frames de client buffer truoc khi PLAY"""
+    PREBUFFER_COUNT = 60  # Tang tu 30 len 60 frames
+    
+    print(f"Pre-buffering {PREBUFFER_COUNT} frames...")
+    
+    for i in range(PREBUFFER_COUNT):
+        if self.clientInfo['prebuffer_event'].isSet():
+            print("PLAY received, stopping pre-buffer")
+            return
+        
+        data = self.clientInfo['videoStream'].nextFrame()
+        if not data:
+            break
+        
+        frameNumber = self.clientInfo['videoStream'].frameNbr()
+        address = self.clientInfo['rtspSocket'][1][0]
+        port = int(self.clientInfo['rtpPort'])
+        
+        self.splitAndSendFrame(data, frameNumber, address, port)
+        
+        # Gui nhanh de fill buffer nhanh (0.01s = 100 FPS tam thoi)
+        time.sleep(0.01)  # Tang tu 0.02 (50 FPS)
+    
+    print(f"Pre-buffering complete: {i+1} frames sent")
+\end{lstlisting}
+
+\textbf{Pre-buffering strategy:}
+\begin{itemize}
+    \item \textbf{PREBUFFER\_COUNT = 60}: Gửi 60 frames (tương ứng buffer\_target 50 + dự phòng)
+    \item \textbf{Fast sending rate}: 100 FPS (0.01s) thay vì 50 FPS bình thường
+    \item \textbf{Time to fill}: 60 frames × 0.01s = 0.6 giây
+    \item \textbf{Kết quả}: Client có đủ buffer ngay khi nhấn PLAY, FPS ổn định từ đầu
+\end{itemize}
+
+\subsubsection{Normal Streaming Rate}
+
+Sau pre-buffer, server chuyển về tốc độ bình thường:
+
+\begin{lstlisting}[language=Python, caption={Normal Streaming Loop}]
+def sendRtp(self):
+    while True:
+        frame_start = time.time()
+        
+        # Get and send frame
+        data = self.clientInfo['videoStream'].nextFrame()
+        if not data:
+            break
+        
+        frameNumber = self.clientInfo['videoStream'].frameNbr()
+        self.splitAndSendFrame(data, frameNumber, address, port)
+        
+        # Normal frame rate: 50 FPS
+        frame_elapsed = time.time() - frame_start
+        time.sleep(max(0, 0.02 - frame_elapsed))
+\end{lstlisting}
+
+\textbf{Two-phase sending strategy:}
+\begin{enumerate}
+    \item \textbf{Phase 1 - Pre-buffering}: 100 FPS (0.6s) để fill buffer nhanh
+    \item \textbf{Phase 2 - Normal streaming}: 50 FPS để maintain playback
+    \item \textbf{Benefit}: Loại bỏ "chậm lúc đầu", FPS ổn định ngay từ frame đầu tiên
 \end{enumerate}
 
 \subsection{GUI Integration}

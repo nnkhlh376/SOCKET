@@ -40,7 +40,7 @@
         \item Dual queue architecture (reception + playback)
         \item Buffer underrun detection và recovery
         \item Adaptive buffer threshold theo network quality
-        \item Smooth playback với constant frame rate 25 FPS
+        \item Smooth playback với constant frame rate 50 FPS (cải tiến từ 25 FPS)
     \end{itemize}
 \end{enumerate}
 
@@ -109,9 +109,9 @@
 \hline
 Max resolution supported & 1920×1080 \\
 Max frame size & 200 KB \\
-Frame rate & 25 FPS \\
+Frame rate & 50 FPS (cải tiến) \\
 RTP packet size & ≤ 1400 bytes \\
-Pre-buffer size & 10 frames (400 ms) \\
+Pre-buffer size & 50 frames (1s @ 50 FPS) \\
 Bandwidth (Full HD) & 40-60 Mbps \\
 Packet loss tolerance & < 5\% \\
 Stuttering reduction & 85\% \\
@@ -127,7 +127,7 @@ Stuttering reduction & 85\% \\
     \item ✅ Hỗ trợ HD video (1920×1080)
     \item ✅ Tự động recovery từ network issues
     \item ✅ Real-time buffer status feedback
-    \item ✅ Stable frame rate 25 FPS
+    \item ✅ Stable frame rate 50 FPS với pre-buffering 60 frames
 \end{itemize}
 
 \subsection{Hướng phát triển}

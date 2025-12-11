@@ -678,9 +678,9 @@ def sendRtp(self):
             print(f"Send error: {e}")
             break
         
-        # Frame rate control (25 FPS)
+        # Frame rate control (50 FPS)
         frame_elapsed = time.time() - frame_start
-        time.sleep(max(0, 0.04 - frame_elapsed))
+        time.sleep(max(0, 0.02 - frame_elapsed))
 \end{lstlisting}
 
 \textbf{Streaming loop cơ bản:}
@@ -688,7 +688,7 @@ def sendRtp(self):
     \item Đọc frame từ video file
     \item Tạo 1 RTP packet cho toàn bộ frame (không chia nhỏ)
     \item Gửi qua UDP
-    \item Frame rate control: 25 FPS (0.04s/frame)
+    \item Frame rate control: 50 FPS (0.02s/frame) - tăng từ 25 FPS để playback mượt hơn
     \item Dừng khi nhận pause/stop event
 \end{itemize}
 
@@ -709,7 +709,7 @@ def sendRtp(self):
     \item \textbf{1 frame = 1 RTP packet} (không chia nhỏ frame)
     \item Marker bit = 0 trong trien khai co ban
     \item Sequence number tăng dần theo frame number
-    \item UDP transmission với frame rate 25 FPS
+    \item UDP transmission với frame rate 50 FPS (tăng từ 25 FPS)
     \item Session management với random Session ID
 \end{itemize}
 
