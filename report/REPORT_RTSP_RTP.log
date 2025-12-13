@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.12.9)  13 DEC 2025 21:36
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.12.9)  13 DEC 2025 21:47
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -932,7 +932,7 @@ Package hyperref Info: Link coloring ON on input line 80.
 \openout4 = `REPORT_RTSP_RTP.out'.
 
 (sections/0_trang_bia.tex
-<LOGO.png, id=462, 225.84375pt x 225.84375pt>
+<LOGO.png, id=466, 225.84375pt x 225.84375pt>
 File: LOGO.png Graphic file (type png)
 <use LOGO.png>
 Package pdftex.def Info: LOGO.png  used on input line 36.
@@ -945,7 +945,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.66 ...p() - HD Version}{29}{subsubsection.4.4.1}
+l.66 ...lient-Side Reassembly}{29}{subsection.4.4}
                                                   % [1] [2])
 \tf@toc=\write5
 \openout5 = `REPORT_RTSP_RTP.toc'.
@@ -956,13 +956,13 @@ LaTeX Font Info:    Trying to load font information for T5+cmtt on input line 1
 (C:\Users\Admin\AppData\Local\Programs\MiKTeX\tex/latex/vntex\t5cmtt.fd
 File: t5cmtt.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 ) [6]
-<setup.png, id=621, 688.82344pt x 277.78781pt>
+<setup.png, id=626, 688.82344pt x 277.78781pt>
 File: setup.png Graphic file (type png)
 <use setup.png>
 Package pdftex.def Info: setup.png  used on input line 184.
 (pdftex.def)             Requested size: 455.24411pt x 183.59059pt.
 [7 <./setup.png>]
-<server_flow.png, id=635, 3984.8875pt x 4331.18124pt>
+<server_flow.png, id=640, 3984.8875pt x 4331.18124pt>
 File: server_flow.png Graphic file (type png)
 <use server_flow.png>
 Package pdftex.def Info: server_flow.png  used on input line 239.
@@ -972,8 +972,14 @@ Overfull \hbox (45.52718pt too wide) in paragraph at lines 239--240
  [][] 
  []
 
-[8] [9 <./server_flow.png>] [10]) (sections/2_rtsp_rtp.tex
-<mermaid_diagram.png, id=655, 481.8pt x 622.325pt>
+[8] [9 <./server_flow.png>]
+Overfull \hbox (13.94131pt too wide) in paragraph at lines 273--273
+[]\T5/cmtt/m/n/12 python ClientLauncher.py <server_host> <server_port> <RTP_por
+t> <video_file>[] 
+ []
+
+[10]) (sections/2_rtsp_rtp.tex
+<mermaid_diagram.png, id=660, 481.8pt x 622.325pt>
 File: mermaid_diagram.png Graphic file (type png)
 <use mermaid_diagram.png>
 Package pdftex.def Info: mermaid_diagram.png  used on input line 12.
@@ -1967,14 +1973,14 @@ LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-04>
  ***********
 Package rerunfilecheck Info: File `REPORT_RTSP_RTP.out' has not changed.
-(rerunfilecheck)             Checksum: 214C8164E5CF4C57B4D9DD9CED5CCA87;21486.
+(rerunfilecheck)             Checksum: E0C044CD81C9CA3A3991FDEEACAC6074;21670.
  ) )
 (\end occurred when \iftrue on line 269 was incomplete) 
 Here is how much of TeX's memory you used:
- 25762 strings out of 474486
- 464632 string characters out of 5743755
+ 25764 strings out of 474486
+ 464672 string characters out of 5743755
  2393542 words of memory out of 5000000
- 46446 multiletter control sequences out of 15000+600000
+ 46447 multiletter control sequences out of 15000+600000
  574089 words of font info for 65 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,14n,93p,739b,2181s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1992,9 +1998,9 @@ r/vnr17.pfb><C:/Users/Admin/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr
 nr8.pfb><C:/Users/Admin/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnt
 t10.pfb><C:/Users/Admin/AppData/Local/Programs/MiKTeX/fonts/type1/vntex/vnr/vnt
 t12.pfb>
-Output written on REPORT_RTSP_RTP.pdf (57 pages, 928149 bytes).
+Output written on REPORT_RTSP_RTP.pdf (57 pages, 928884 bytes).
 PDF statistics:
- 2156 PDF objects out of 2487 (max. 8388607)
- 1196 named destinations out of 1200 (max. 500000)
- 945 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 2161 PDF objects out of 2487 (max. 8388607)
+ 1197 named destinations out of 1200 (max. 500000)
+ 953 words of extra memory for PDF output out of 10000 (max. 10000000)
 
