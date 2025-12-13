@@ -43,7 +43,7 @@ Full HD (1920x1080) & ~100-200 KB & \textbf{CẦN FRAGMENTATION} \\
 
 \subsubsection{Thiết kế giải pháp}
 
-Chia mỗi frame thành nhiều RTP packets, mỗi packet ≤ MTU:
+Chia mỗi frame thành nhiều RTP packets, mỗi packet $\leq$ MTU:
 
 \begin{lstlisting}[language=Python, caption={Frame Fragmentation Constants}]
 # Fragmentation parameters
@@ -99,7 +99,7 @@ def makeRtp(self, payload, frameNbr, marker=0):
     padding = 0
     extension = 0
     cc = 0
-    # marker bit = 1 CHỈ KHI là fragment cuối cùng
+    # marker bit = 1 CHI KHI la fragment cuoi cung
     pt = 26  # MJPEG payload type
     seqnum = frameNbr
     ssrc = 0
@@ -164,7 +164,7 @@ def sendRtp(self):
                     end = min(start + CHUNK_SIZE, frame_size)
                     fragment = data[start:end]
                     
-                    # Marker = 1 CHỈ cho fragment cuối cùng
+                    # Marker = 1 CHO fragment cuoi cung
                     marker = 1 if (i == num_fragments - 1) else 0
                     
                     # Sequence number tang dan cho moi fragment
@@ -190,7 +190,7 @@ def sendRtp(self):
 \textbf{Fragmentation algorithm:}
 \begin{enumerate}
     \item Kiểm tra frame size
-    \item Nếu frame size ≤ CHUNK\_SIZE: gửi 1 packet với marker=1
+    \item Nếu frame size $\leq$ CHUNK\_SIZE: gửi 1 packet với marker=1
     \item Nếu frame size > CHUNK\_SIZE:
     \begin{itemize}
         \item Tính số fragments: $\lceil \frac{\text{frame\_size}}{\text{CHUNK\_SIZE}} \rceil$
@@ -351,7 +351,7 @@ def calculateStats(self):
 
 \textbf{Metrics:}
 \begin{itemize}
-    \item \textbf{Bandwidth:} Bytes received × 8 / elapsed time
+    \item \textbf{Bandwidth:} Bytes received $\times$ 8 / elapsed time
     \item \textbf{Frame rate:} Frames received / elapsed time
     \item \textbf{Loss rate:} Packets lost / total packets
 \end{itemize}
@@ -369,7 +369,7 @@ Fragments per frame & 1 & 1-200+ \\
 Marker bit & Always 0 & 0 or 1 \\
 Sequence number & Per frame & Per fragment \\
 Client buffer & Direct display & Reassembly buffer \\
-HD support & ❌ & ✅ \\
+HD support & No & Yes \\
 Packet loss detection & Basic & Advanced \\
 \hline
 \end{tabular}
@@ -534,7 +534,7 @@ Jitter & 15ms & 8ms \\
 
 \subsubsection{Fragmentation Strategy}
 \begin{itemize}
-    \item \textbf{MTU-aware fragmentation:} Chia frames thành packets ≤ 1400 bytes
+    \item \textbf{MTU-aware fragmentation:} Chia frames thành packets $\leq$ 1400 bytes
     \item \textbf{Sequence numbering:} Mỗi fragment có sequence riêng để detect loss
     \item \textbf{Marker bit:} marker=1 chỉ fragment cuối để trigger reassembly
     \item \textbf{Reassembly buffer:} Client ghép fragments theo timestamp
@@ -552,7 +552,7 @@ Jitter & 15ms & 8ms \\
 
 \subsubsection{Key Implementation Points}
 \begin{itemize}
-    \item \textbf{Server:} Fragment size = min(CHUNK\_SIZE, remaining) ≤ 1400 bytes
+    \item \textbf{Server:} Fragment size = min(CHUNK\_SIZE, remaining) $\leq$ 1400 bytes
     \item \textbf{Server:} Gửi all fragments với cùng timestamp, marker=1 cho cuối
     \item \textbf{Client:} Accumulate fragments cho đến khi marker=1
     \item \textbf{Client:} Discard nếu timestamp thay đổi giữa chừng (incomplete)
@@ -567,7 +567,7 @@ Jitter & 15ms & 8ms \\
 \textbf{Metric} & \textbf{Before} & \textbf{After HD + Optimization} \\
 \hline
 Max frame size & ~15 KB & ~200 KB \\
-Resolution support & SD only & Full HD (1920×1080) \\
+Resolution support & SD only & Full HD (1920$\times$1080) \\
 Fragmentation & IP layer & Application layer \\
 Packet loss detection & Per frame & Per fragment \\
 Socket buffer & 64 KB & 2 MB \\
@@ -581,15 +581,15 @@ Jitter & 15ms & 8ms \\
 
 \subsubsection{Trade-offs}
 \begin{itemize}
-    \item ➖ Tăng số packets (1 frame → 10-150 packets)
-    \item ➖ Overhead: sequence numbers + reassembly logic
-    \item ➖ Memory: 2MB socket buffer + reassembly buffer
-    \item ➕ Hỗ trợ HD/Full HD mà KHÔNG bị IP fragmentation
-    \item ➕ Detect loss chính xác per-fragment
-    \item ➕ Giảm loss do socket buffer overflow
-    \item ➕ Smooth HD playback 25 FPS ổn định
+    \item [-] Tăng số packets (1 frame $\rightarrow$ 10-150 packets)
+    \item [-] Overhead: sequence numbers + reassembly logic
+    \item [-] Memory: 2MB socket buffer + reassembly buffer
+    \item [+] Hỗ trợ HD/Full HD mà KHÔNG bị IP fragmentation
+    \item [+] Detect loss chính xác per-fragment
+    \item [+] Giảm loss do socket buffer overflow
+    \item [+] Smooth HD playback 25 FPS ổn định
 \end{itemize}
 
-\textbf{Kết luận:} Application-layer fragmentation kết hợp với socket buffer optimization cho phép streaming Full HD (1920×1080) với frame size lên đến 200 KB. Sequence-based packet loss detection chính xác đo được loss thực tế ở tầng mạng (0-3\% LAN, 0\% localhost). SO\_RCVBUF = 2MB giảm loss do kernel buffer overflow từ 5-10/min xuống 0. Trade-off về số packets và memory là chấp nhận được để đạt được smooth HD playback.
+\textbf{Kết luận:} Application-layer fragmentation kết hợp với socket buffer optimization cho phép streaming Full HD (1920$\times$1080) với frame size lên đến 200 KB. Sequence-based packet loss detection chính xác đo được loss thực tế ở tầng mạng (0-3\% LAN, 0\% localhost). SO\_RCVBUF = 2MB giảm loss do kernel buffer overflow từ 5-10/min xuống 0. Trade-off về số packets và memory là chấp nhận được để đạt được smooth HD playback.
 
 \clearpage

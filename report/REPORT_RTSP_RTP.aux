@@ -16,166 +16,181 @@
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.3}Client}{5}{subsubsection.2.3.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.4}Server}{5}{subsubsection.2.3.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Yêu cầu kỹ thuật}{5}{subsection.2.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.1}PHẦN 1: Triển khai RTSP Client (4 điểm)}{5}{subsubsection.2.4.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces RTSP Client State Machine}}{6}{figure.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.2}PHẦN 2: Triển khai RTP Server}{6}{subsubsection.2.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.3}PHẦN 3: HD Video Streaming (3 điểm)}{7}{subsubsection.2.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.4}PHẦN 4: Client-Side Caching (2.5 điểm)}{7}{subsubsection.2.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Triển khai giao thức RTSP ở Client và đóng gói RTP ở Server (4 điểm)}{8}{section.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Sơ đồ tương tác RTSP/RTP giữa Client và Server}}{8}{figure.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}RTSP Protocol - Client Side}{8}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.1}RTSP State Machine \& Constants}{8}{subsubsection.3.1.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}RTSP State Machine}{8}{lstlisting.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.2}Khởi tạo Client \& Kết nối RTSP}{9}{subsubsection.3.1.2}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}Client RTSP Connection}{9}{lstlisting.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.3}Gửi RTSP Requests}{9}{subsubsection.3.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Hàm sendRtspRequest()}{9}{section*.2}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {3}SETUP Request}{9}{lstlisting.3}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {4}PLAY Request}{10}{lstlisting.4}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {5}PAUSE Request}{10}{lstlisting.5}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {6}TEARDOWN Request \& Sending}{10}{lstlisting.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.4}Nhận RTSP Responses}{11}{subsubsection.3.1.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Hàm recvRtspReply()}{11}{section*.3}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {7}Receive RTSP Reply Thread}{11}{lstlisting.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Hàm parseRtspReply()}{11}{section*.4}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {8}Parse RTSP Response}{11}{lstlisting.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}RTSP Protocol - Server Side}{12}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Khởi tạo Server \& Bind RTSP Port}{12}{subsubsection.3.2.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {9}Server Initialization}{13}{lstlisting.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Nhận RTSP Requests}{13}{subsubsection.3.2.2}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {10}Receive RTSP Request}{13}{lstlisting.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.3}Xử lý RTSP Requests}{14}{subsubsection.3.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Hàm processRtspRequest()}{14}{section*.5}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {11}Process RTSP Request - SETUP}{14}{lstlisting.11}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {12}Process RTSP Request - PLAY/PAUSE/TEARDOWN}{15}{lstlisting.12}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.4}Gửi RTSP Responses}{15}{subsubsection.3.2.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Hàm replyRtsp()}{15}{section*.6}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {13}Reply RTSP}{15}{lstlisting.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}RTP Packets}{16}{subsection.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.1}RTP Header Structure}{16}{subsubsection.3.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Header Layout (RFC 3550)}{16}{section*.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.2}Field Definitions}{16}{subsubsection.3.3.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces RTP Header Fields}}{16}{table.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.3}Encode RTP Packets}{17}{subsubsection.3.3.3}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {14}RTP Encode Method}{17}{lstlisting.14}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.4}Khởi tạo RTP Socket (Client Side)}{18}{subsubsection.3.3.4}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {15}Open RTP Port for Receiving}{18}{lstlisting.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.5}Decode RTP Packets}{18}{subsubsection.3.3.5}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {16}RTP Decode Methods}{18}{lstlisting.16}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.6}Tạo RTP Packets (Cơ bản)}{19}{subsubsection.3.3.6}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {17}Make RTP Packet - Basic Version}{19}{lstlisting.17}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.7}Gửi RTP Packets (Cơ bản)}{20}{subsubsection.3.3.7}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {18}Send RTP Stream - Basic Version}{20}{lstlisting.18}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Tóm tắt triển khai RTSP/RTP cơ bản}{21}{subsection.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}RTSP Client}{21}{subsubsection.3.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}RTP Server}{21}{subsubsection.3.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}HD Video Streaming và Frame Fragmentation (3 điểm)}{23}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Vấn đề với UDP MTU}{23}{subsection.4.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Frame Sizes theo Resolution}}{23}{table.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Frame Fragmentation Strategy}{23}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Thiết kế giải pháp}{23}{subsubsection.4.2.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {19}Frame Fragmentation Constants}{23}{lstlisting.19}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Marker Bit Usage}{24}{subsubsection.4.2.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Marker Bit Semantics}}{24}{table.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Server-Side Fragmentation}{24}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}makeRtp() - HD Version}{24}{subsubsection.4.3.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {20}Make RTP Packet with Fragmentation Support}{24}{lstlisting.20}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}sendRtp() - HD Version}{24}{subsubsection.4.3.2}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {21}Send RTP with Fragmentation}{25}{lstlisting.21}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Client-Side Reassembly}{26}{subsection.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}listenRtp() - HD Version}{26}{subsubsection.4.4.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {22}Receive and Reassemble RTP Packets}{26}{lstlisting.22}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}Xử lý packet loss}{28}{subsubsection.4.4.2}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {23}Packet Loss Detection}{28}{lstlisting.23}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Ví dụ Frame Fragmentation}{28}{subsection.4.5}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {24}Fragmentation Example}{28}{lstlisting.24}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Performance Metrics}{29}{subsection.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.1}Bandwidth Calculation}{29}{subsubsection.4.6.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {25}Calculate Statistics}{29}{lstlisting.25}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}So sánh triển khai Basic vs HD}{29}{subsection.4.7}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Basic vs HD Implementation}}{29}{table.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Network Analysis và Packet Loss Detection}{29}{subsection.4.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.1}Nguyên nhân Packet Loss}{29}{subsubsection.4.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.2}Cách đo Packet Loss}{30}{subsubsection.4.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.3}Socket Buffer Optimization}{31}{subsubsection.4.8.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces OS Socket Buffer Sizes}}{31}{table.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.4}Socket Error Monitoring}{31}{subsubsection.4.8.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.5}Kết quả Network Analysis}{32}{subsubsection.4.8.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Network Performance Comparison}}{32}{table.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.9}Tóm tắt HD Video Streaming}{32}{subsection.4.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.9.1}Fragmentation Strategy}{32}{subsubsection.4.9.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.9.2}Network Analysis}{32}{subsubsection.4.9.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.9.3}Key Implementation Points}{32}{subsubsection.4.9.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.9.4}Performance Metrics}{33}{subsubsection.4.9.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces HD Streaming Performance Summary}}{33}{table.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.9.5}Trade-offs}{33}{subsubsection.4.9.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Client-Side Buffer và Pre-Buffering (2.5 điểm)}{34}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Vấn đề Jitter và Network Variation}{34}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.1}Network Jitter}{34}{subsubsection.5.1.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Network Jitter Example}}{34}{table.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.2}Buffer Solution}{34}{subsubsection.5.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Buffer Architecture}{34}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Deque-Based Design}{34}{subsubsection.5.2.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {26}Buffer Initialization}{34}{lstlisting.26}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Giải thích từng thành phần:}{35}{section*.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Buffer States}{36}{subsubsection.5.2.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Buffer States}}{36}{table.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Reception Thread}{36}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}listenRtp() với Buffer}{36}{subsubsection.5.3.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {27}RTP Reception with Buffering}{36}{lstlisting.27}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Playback Thread}{38}{subsection.5.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}playFromBuffer()}{38}{subsubsection.5.4.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {28}Playback Thread with Buffer Management}{38}{lstlisting.28}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}Buffer Underrun Handling}{39}{subsubsection.5.4.2}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {29}Underrun Detection and Recovery}{39}{lstlisting.29}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}GUI Integration}{40}{subsection.5.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.5.1}Buffer Status Display}{40}{subsubsection.5.5.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {30}Buffer Status UI}{40}{lstlisting.30}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Playback Control}{41}{subsection.5.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.1}Start/Stop Playback}{41}{subsubsection.5.6.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {31}Playback Control Methods}{41}{lstlisting.31}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.2}Integration với RTSP Controls}{41}{subsubsection.5.6.2}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {32}RTSP Button Handlers với Buffer}{41}{lstlisting.32}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.7}Advanced Buffer Strategies}{42}{subsection.5.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.1}Adaptive Buffer Threshold}{42}{subsubsection.5.7.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {33}Adaptive Buffering}{42}{lstlisting.33}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.8}Performance Comparison}{43}{subsection.5.8}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Buffer Performance Comparison}}{43}{table.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.9}Buffer Monitoring}{43}{subsection.5.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.9.1}Real-time Statistics}{43}{subsubsection.5.9.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {34}Buffer Statistics}{43}{lstlisting.34}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.10}Buffer Size và Packet Loss Resilience}{44}{subsection.5.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.1}Mối quan hệ giữa Buffer và Packet Loss}{44}{subsubsection.5.10.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Packet Loss vs Application Buffer}}{44}{figure.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.2}Bounded vs Unbounded Deque}{44}{subsubsection.5.10.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Bounded vs Unbounded Performance}}{45}{table.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.3}Tại sao Buffer Size quan trọng?}{45}{subsubsection.5.10.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Buffer Resilience Against Loss Bursts}}{45}{table.12}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.4}Công thức tính Buffer Size tối ưu}{45}{subsubsection.5.10.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.5}Trade-off Analysis}{46}{subsubsection.5.10.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces Buffer Size Trade-offs}}{46}{table.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.6}Monitoring và Auto-tuning}{46}{subsubsection.5.10.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.11}Tóm tắt Client-Side Buffer}{47}{subsection.5.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.11.1}Components}{47}{subsubsection.5.11.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.11.2}Benefits}{47}{subsubsection.5.11.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.11.3}Tradeoffs}{47}{subsubsection.5.11.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.11.4}Key Insights về Buffer và Packet Loss}{47}{subsubsection.5.11.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Kết luận}{49}{section.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Tổng kết kết quả}{49}{subsection.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Thách thức và giải pháp}{49}{subsection.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.1}UDP MTU Limitation}{49}{subsubsection.6.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.2}Network Jitter}{50}{subsubsection.6.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.3}Packet Loss}{50}{subsubsection.6.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Kết quả đạt được}{51}{subsection.6.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.3.1}Technical Metrics}{51}{subsubsection.6.3.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces System Performance Metrics}}{51}{table.14}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.3.2}User Experience}{51}{subsubsection.6.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Hướng phát triển}{51}{subsection.6.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.4.1}Short-term Improvements}{51}{subsubsection.6.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.4.2}Long-term Enhancements}{52}{subsubsection.6.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Bài học kinh nghiệm}{52}{subsection.6.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.5.1}Network Programming}{52}{subsubsection.6.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.5.2}Protocol Design}{52}{subsubsection.6.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.5.3}Performance Optimization}{52}{subsubsection.6.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Kết luận}{53}{subsection.6.6}\protected@file@percent }
-\gdef \@abspage@last{54}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.1}PHẦN 1: Implement the RTSP protocol in the client and implement the RTP packetization in the server (4 điểm)}{5}{subsubsection.2.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{PHẦN 1: Triển khai Client}{5}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{A. Các Module}{5}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{B. Triển Khai RTSP Commands}{5}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subparagraph}{1. Lệnh SETUP}{6}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subparagraph}{2. Lệnh PLAY}{6}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subparagraph}{3. Lệnh PAUSE}{6}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subparagraph}{4. Lệnh TEARDOWN}{6}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{C. Định dạng RTSP Message}{7}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Request Format}{7}{section*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Response Format}{7}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Mã trạng thái}{7}{section*.12}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Các trạng thái RTSP Client}}{7}{figure.1}\protected@file@percent }
+\newlabel{fig:example}{{1}{7}{Các trạng thái RTSP Client}{figure.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{PHẦN 2: Triển khai RTP Server}{7}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{A. Các Module}{7}{section*.14}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Các trạng thái RTSP Client}}{9}{figure.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.2}PHẦN 2: HD Video Streaming (3 điểm)}{9}{subsubsection.2.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.3}PHẦN 3: Client-Side Caching (2.5 điểm)}{10}{subsubsection.2.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Tệp và chạy chương trình}{10}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Triển khai giao thức RTSP ở Client và đóng gói RTP ở Server (4 điểm)}{11}{section.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Sơ đồ tương tác RTSP/RTP giữa Client và Server}}{11}{figure.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}RTSP Protocol - Client Side}{11}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.1}RTSP State Machine \& Constants}{11}{subsubsection.3.1.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}RTSP State Machine}{11}{lstlisting.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.2}Khởi tạo Client \& Kết nối RTSP}{12}{subsubsection.3.1.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}Client RTSP Connection}{12}{lstlisting.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.3}Gửi RTSP Requests}{12}{subsubsection.3.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hàm sendRtspRequest()}{12}{section*.15}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {3}SETUP Request}{12}{lstlisting.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {4}PLAY Request}{13}{lstlisting.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {5}PAUSE Request}{13}{lstlisting.5}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {6}TEARDOWN Request \& Sending}{14}{lstlisting.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.4}Nhận RTSP Responses}{14}{subsubsection.3.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hàm recvRtspReply()}{14}{section*.16}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {7}Receive RTSP Reply Thread}{14}{lstlisting.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hàm parseRtspReply()}{15}{section*.17}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {8}Parse RTSP Response}{15}{lstlisting.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}RTSP Protocol - Server Side}{16}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Khởi tạo Server \& Bind RTSP Port}{16}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {9}Server Initialization}{16}{lstlisting.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Nhận RTSP Requests}{16}{subsubsection.3.2.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {10}Receive RTSP Request}{16}{lstlisting.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.3}Xử lý RTSP Requests}{17}{subsubsection.3.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hàm processRtspRequest()}{17}{section*.18}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {11}Process RTSP Request - SETUP}{17}{lstlisting.11}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {12}Process RTSP Request - PLAY/PAUSE/TEARDOWN}{18}{lstlisting.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.4}Gửi RTSP Responses}{18}{subsubsection.3.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hàm replyRtsp()}{18}{section*.19}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {13}Reply RTSP}{18}{lstlisting.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}RTP Packets}{19}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.1}RTP Header Structure}{19}{subsubsection.3.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Header Layout (RFC 3550)}{19}{section*.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.2}Field Definitions}{19}{subsubsection.3.3.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces RTP Header Fields}}{19}{table.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.3}Encode RTP Packets}{20}{subsubsection.3.3.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {14}RTP Encode Method}{20}{lstlisting.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.4}Khởi tạo RTP Socket (Client Side)}{21}{subsubsection.3.3.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {15}Open RTP Port for Receiving}{21}{lstlisting.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.5}Decode RTP Packets}{22}{subsubsection.3.3.5}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {16}RTP Decode Methods}{22}{lstlisting.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.6}Tạo RTP Packets (Cơ bản)}{23}{subsubsection.3.3.6}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {17}Make RTP Packet - Basic Version}{23}{lstlisting.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.7}Gửi RTP Packets (Cơ bản)}{23}{subsubsection.3.3.7}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {18}Send RTP Stream - Basic Version}{23}{lstlisting.18}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Tóm tắt triển khai RTSP/RTP cơ bản}{24}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}RTSP Client}{24}{subsubsection.3.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}RTP Server}{25}{subsubsection.3.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}HD Video Streaming và Frame Fragmentation (3 điểm)}{26}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Vấn đề với UDP MTU}{26}{subsection.4.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Frame Sizes theo Resolution}}{26}{table.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Frame Fragmentation Strategy}{26}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Thiết kế giải pháp}{26}{subsubsection.4.2.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {19}Frame Fragmentation Constants}{26}{lstlisting.19}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Marker Bit Usage}{27}{subsubsection.4.2.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Marker Bit Semantics}}{27}{table.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Server-Side Fragmentation}{27}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}makeRtp() - HD Version}{27}{subsubsection.4.3.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {20}Make RTP Packet with Fragmentation Support}{27}{lstlisting.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}sendRtp() - HD Version}{27}{subsubsection.4.3.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {21}Send RTP with Fragmentation}{28}{lstlisting.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Client-Side Reassembly}{29}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}listenRtp() - HD Version}{29}{subsubsection.4.4.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {22}Receive and Reassemble RTP Packets}{29}{lstlisting.22}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}Xử lý packet loss}{31}{subsubsection.4.4.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {23}Packet Loss Detection}{31}{lstlisting.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Ví dụ Frame Fragmentation}{31}{subsection.4.5}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {24}Fragmentation Example}{31}{lstlisting.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Performance Metrics}{32}{subsection.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.1}Bandwidth Calculation}{32}{subsubsection.4.6.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {25}Calculate Statistics}{32}{lstlisting.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}So sánh triển khai Basic vs HD}{32}{subsection.4.7}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Basic vs HD Implementation}}{32}{table.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Network Analysis và Packet Loss Detection}{32}{subsection.4.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.1}Nguyên nhân Packet Loss}{32}{subsubsection.4.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.2}Cách đo Packet Loss}{33}{subsubsection.4.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.3}Socket Buffer Optimization}{34}{subsubsection.4.8.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces OS Socket Buffer Sizes}}{34}{table.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.4}Socket Error Monitoring}{34}{subsubsection.4.8.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.8.5}Kết quả Network Analysis}{35}{subsubsection.4.8.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Network Performance Comparison}}{35}{table.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.9}Tóm tắt HD Video Streaming}{35}{subsection.4.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.9.1}Fragmentation Strategy}{35}{subsubsection.4.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.9.2}Network Analysis}{35}{subsubsection.4.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.9.3}Key Implementation Points}{35}{subsubsection.4.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.9.4}Performance Metrics}{36}{subsubsection.4.9.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces HD Streaming Performance Summary}}{36}{table.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.9.5}Trade-offs}{36}{subsubsection.4.9.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Client-Side Buffer và Pre-Buffering (2.5 điểm)}{37}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Vấn đề Jitter và Network Variation}{37}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.1}Network Jitter}{37}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Network Jitter Example}}{37}{table.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.2}Buffer Solution}{37}{subsubsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Buffer Architecture}{37}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Deque-Based Design}{37}{subsubsection.5.2.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {26}Buffer Initialization}{37}{lstlisting.26}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Giải thích từng thành phần:}{38}{section*.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Buffer States}{39}{subsubsection.5.2.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Buffer States}}{39}{table.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Reception Thread}{39}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}listenRtp() với Buffer}{39}{subsubsection.5.3.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {27}RTP Reception with Buffering}{39}{lstlisting.27}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Playback Thread}{41}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}playFromBuffer()}{41}{subsubsection.5.4.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {28}Playback Thread with Buffer Management}{41}{lstlisting.28}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}Buffer Underrun Handling}{42}{subsubsection.5.4.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {29}Underrun Detection and Recovery}{42}{lstlisting.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}GUI Integration}{43}{subsection.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.5.1}Buffer Status Display}{43}{subsubsection.5.5.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {30}Buffer Status UI}{43}{lstlisting.30}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Playback Control}{44}{subsection.5.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.1}Start/Stop Playback}{44}{subsubsection.5.6.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {31}Playback Control Methods}{44}{lstlisting.31}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.2}Integration với RTSP Controls}{44}{subsubsection.5.6.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {32}RTSP Button Handlers với Buffer}{44}{lstlisting.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.7}Advanced Buffer Strategies}{45}{subsection.5.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.1}Adaptive Buffer Threshold}{45}{subsubsection.5.7.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {33}Adaptive Buffering}{45}{lstlisting.33}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.8}Performance Comparison}{46}{subsection.5.8}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Buffer Performance Comparison}}{46}{table.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.9}Buffer Monitoring}{46}{subsection.5.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.9.1}Real-time Statistics}{46}{subsubsection.5.9.1}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {34}Buffer Statistics}{46}{lstlisting.34}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.10}Buffer Size và Packet Loss Resilience}{47}{subsection.5.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.1}Mối quan hệ giữa Buffer và Packet Loss}{47}{subsubsection.5.10.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Packet Loss vs Application Buffer}}{47}{figure.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.2}Bounded vs Unbounded Deque}{47}{subsubsection.5.10.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Bounded vs Unbounded Performance}}{48}{table.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.3}Tại sao Buffer Size quan trọng?}{48}{subsubsection.5.10.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Buffer Resilience Against Loss Bursts}}{48}{table.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.4}Công thức tính Buffer Size tối ưu}{48}{subsubsection.5.10.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.5}Trade-off Analysis}{49}{subsubsection.5.10.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces Buffer Size Trade-offs}}{49}{table.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.10.6}Monitoring và Auto-tuning}{49}{subsubsection.5.10.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.11}Tóm tắt Client-Side Buffer}{50}{subsection.5.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.11.1}Components}{50}{subsubsection.5.11.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.11.2}Benefits}{50}{subsubsection.5.11.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.11.3}Tradeoffs}{50}{subsubsection.5.11.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.11.4}Key Insights về Buffer và Packet Loss}{50}{subsubsection.5.11.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Kết luận}{52}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Tổng kết kết quả}{52}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Thách thức và giải pháp}{52}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.1}UDP MTU Limitation}{52}{subsubsection.6.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.2}Network Jitter}{53}{subsubsection.6.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.3}Packet Loss}{53}{subsubsection.6.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Kết quả đạt được}{54}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.3.1}Technical Metrics}{54}{subsubsection.6.3.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces System Performance Metrics}}{54}{table.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.3.2}User Experience}{54}{subsubsection.6.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Hướng phát triển}{54}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.4.1}Short-term Improvements}{54}{subsubsection.6.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.4.2}Long-term Enhancements}{55}{subsubsection.6.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Bài học kinh nghiệm}{55}{subsection.6.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.5.1}Network Programming}{55}{subsubsection.6.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.5.2}Protocol Design}{55}{subsubsection.6.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.5.3}Performance Optimization}{55}{subsubsection.6.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Kết luận}{56}{subsection.6.6}\protected@file@percent }
+\gdef \@abspage@last{57}

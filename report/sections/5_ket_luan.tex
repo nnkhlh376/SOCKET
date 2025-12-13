@@ -30,7 +30,7 @@
         \item Frame fragmentation cho frames lớn (> MTU)
         \item Marker bit để đánh dấu fragment cuối
         \item Reassembly logic ở client
-        \item Hỗ trợ Full HD (1920×1080) với frame size 100-200 KB
+        \item Hỗ trợ Full HD (1920$\times$1080) với frame size 100-200 KB
         \item Packet loss detection qua sequence gaps
     \end{itemize}
     
@@ -107,10 +107,10 @@
 \hline
 \textbf{Metric} & \textbf{Value} \\
 \hline
-Max resolution supported & 1920×1080 \\
+Max resolution supported & 1920$\times$1080 \\
 Max frame size & 200 KB \\
 Frame rate & 25 FPS \\
-RTP packet size & ≤ 1400 bytes \\
+RTP packet size & $\leq$ 1400 bytes \\
 Pre-buffer size & 10 frames (400 ms) \\
 Bandwidth (Full HD) & 40-60 Mbps \\
 Packet loss tolerance & < 5\% \\
@@ -124,7 +124,7 @@ Stuttering reduction & 85\% \\
 
 \begin{itemize}
     \item ✅ Smooth playback với minimal stuttering
-    \item ✅ Hỗ trợ HD video (1920×1080)
+    \item Hỗ trợ HD video (1920$\times$1080)
     \item ✅ Tự động recovery từ network issues
     \item ✅ Real-time buffer status feedback
     \item ✅ Stable frame rate 25 FPS

@@ -678,12 +678,12 @@ Smooth \\
     \item FPS = 25
     \item Burst loss tối đa quan sát: 3 giây
     \item Safety margin: 1 giây (25 frames)
-    \item \texttt{maxlen} = (25 × 3) + 25 = \textbf{100 frames} ✓
+    \item \texttt{maxlen} = (25 $\times$ 3) + 25 = \textbf{100 frames}
 \end{itemize}
 
 Nếu loss pattern thay đổi:
 \begin{itemize}
-    \item Burst 5s → \texttt{maxlen} = (25 × 5) + 25 = 150
+    \item Burst 5s $\rightarrow$ \texttt{maxlen} = (25 $\times$ 5) + 25 = 150
     \item Steady loss (không burst) → \texttt{maxlen} = 50-75 (giảm latency)
 \end{itemize}
 
@@ -779,7 +779,7 @@ elif self.underrun_count == 0:
     \item ❌ \textbf{Bounded buffer KHÔNG giảm packet loss} — loss xảy ra ở tầng mạng
     \item ✅ \textbf{Buffer giúp CHỐNG CHỊU loss} — tránh underrun khi burst loss
     \item ✅ \textbf{maxlen = circuit breaker} — tránh unbounded growth và OOM
-    \item 📐 \textbf{Công thức:} \texttt{maxlen = (FPS × burst\_duration) + margin}
+    \item \textbf{Công thức:} \texttt{maxlen = (FPS $\times$ burst\_duration) + margin}
     \item ⚖️ \textbf{Trade-off:} Latency thấp (maxlen nhỏ) vs Loss tolerance cao (maxlen lớn)
 \end{itemize}
 
