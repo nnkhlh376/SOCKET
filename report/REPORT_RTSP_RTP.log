@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.11.24)  11 DEC 2025 11:01
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.11.24)  14 DEC 2025 11:14
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -764,10 +764,10 @@ Package hyperref Info: Link coloring ON on input line 80.
 \openout4 = `REPORT_RTSP_RTP.out'.
 
  (sections/0_trang_bia.tex
-<LOGO.png, id=462, 225.84375pt x 225.84375pt>
+<LOGO.png, id=374, 225.84375pt x 225.84375pt>
 File: LOGO.png Graphic file (type png)
 <use LOGO.png>
-Package pdftex.def Info: LOGO.png  used on input line 35.
+Package pdftex.def Info: LOGO.png  used on input line 36.
 (pdftex.def)             Requested size: 170.71652pt x 170.72636pt.
  [1
 
@@ -775,32 +775,76 @@ Package pdftex.def Info: LOGO.png  used on input line 35.
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.54 ... lý packet loss}{28}{subsubsection.4.4.2}
-                                                  % [1] [2])
+l.66 ...p() - HD Version}{28}{subsubsection.4.4.1}
+                                                  % [1]
+LaTeX Font Info:    Trying to load font information for T5+cmtt on input line 91.
+ (C:\Users\User\AppData\Roaming\MiKTeX\tex/latex/vntex\t5cmtt.fd
+File: t5cmtt.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+))
 \tf@toc=\write5
 \openout5 = `REPORT_RTSP_RTP.toc'.
 
- [3]) (sections/1_thong_tin.tex [4]
-LaTeX Font Info:    Trying to load font information for T5+cmtt on input line 97.
- (C:\Users\User\AppData\Roaming\MiKTeX\tex/latex/vntex\t5cmtt.fd
-File: t5cmtt.fd 1999/05/25 v2.5h Standard LaTeX font definitions
-) [5] [6] [7]) (sections/2_rtsp_rtp.tex
-<mermaid_diagram.png, id=619, 2399.96625pt x 2314.6475pt>
-File: mermaid_diagram.png Graphic file (type png)
-<use mermaid_diagram.png>
-Package pdftex.def Info: mermaid_diagram.png  used on input line 12.
-(pdftex.def)             Requested size: 364.19667pt x 351.24379pt.
- (C:\Program Files\MiKTeX\tex/latex/listings\lstlang1.sty
+ [2]) (sections/1_thong_tin.tex
+Overfull \hbox (57.36813pt too wide) in paragraph at lines 9--16
+ [][] 
+ []
+
+[3] [4] [5]
+
+LaTeX Warning: File `setup.png' not found on input line 186.
+
+
+sections/1_thong_tin.tex:186: Package pdftex.def Error: File `setup.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.186 ...udegraphics[width=1\textwidth]{setup.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[6]
+
+LaTeX Warning: File `server_flow.png' not found on input line 241.
+
+
+sections/1_thong_tin.tex:241: Package pdftex.def Error: File `server_flow.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.241 ...ics[width=1.1\textwidth]{server_flow.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+Overfull \hbox (45.52718pt too wide) in paragraph at lines 241--242
+ [][] 
+ []
+
+[7] [8]
+Overfull \hbox (13.94131pt too wide) in paragraph at lines 275--275
+[]\T5/cmtt/m/n/12 python ClientLauncher.py <server_host> <server_port> <RTP_port> <video_file>[] 
+ []
+
+[9]) (sections/2_rtsp_rtp.tex (C:\Program Files\MiKTeX\tex/latex/listings\lstlang1.sty
 File: lstlang1.sty 2023/02/27 1.9 listings language file
 )
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 21.
- [8
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 63.
+ [10
 
- <./mermaid_diagram.png>]
-LaTeX Font Info:    Trying to load font information for TS1+cmtt on input line 38.
+]
+LaTeX Font Info:    Trying to load font information for TS1+cmtt on input line 80.
  (C:\Program Files\MiKTeX\tex/latex/base\ts1cmtt.fd
 File: ts1cmtt.fd 2023/04/13 v2.5m Standard LaTeX font definitions
-) [9] [10] [11] [12] [13] [14] [15] [16] [17] [18] [19] [20] [21] [22]) (sections/3_hd_streaming.tex
+) [11] [12] [13] [14] [15] [16] [17] [18] [19] [20] [21] [22] [23] [24]) (sections/3_hd_streaming.tex
 
 sections/3_hd_streaming.tex:46: LaTeX Error: Unicode character ≤ (U+2264)
                not set up for use with LaTeX.
@@ -814,7 +858,7 @@ l.46 ...ành nhiều RTP packets, mỗi packet ≤
 You may provide a definition with
 \DeclareUnicodeCharacter 
 
-[23
+[25
 
 ]
 
@@ -967,7 +1011,7 @@ or specify an encoding such as \usepackage [latin1]{inputenc}
 in the document preamble.
 Alternatively, save the file in UTF-8 using your editor or another tool
 
-[24]
+[26]
 
 sections/3_hd_streaming.tex:167: LaTeX Error: Invalid UTF-8 byte sequence (�\expandafter\lst@FillFixed@).
 
@@ -1088,7 +1132,7 @@ or specify an encoding such as \usepackage [latin1]{inputenc}
 in the document preamble.
 Alternatively, save the file in UTF-8 using your editor or another tool
 
-[25]
+[27]
 
 sections/3_hd_streaming.tex:193: LaTeX Error: Unicode character ≤ (U+2264)
                not set up for use with LaTeX.
@@ -1102,7 +1146,7 @@ l.193     \item Nếu frame size ≤
 You may provide a definition with
 \DeclareUnicodeCharacter 
 
-[26] [27] [28]
+[28] [29] [30]
 
 sections/3_hd_streaming.tex:372: LaTeX Error: Unicode character ❌ (U+274C)
                not set up for use with LaTeX.
@@ -1129,7 +1173,7 @@ l.372 HD support & ❌ & ✅
 You may provide a definition with
 \DeclareUnicodeCharacter 
 
-[29] [30] [31]
+[31] [32] [33]
 
 sections/3_hd_streaming.tex:537: LaTeX Error: Unicode character ≤ (U+2264)
                not set up for use with LaTeX.
@@ -1156,7 +1200,7 @@ l.555 ...nt size = min(CHUNK\_SIZE, remaining) ≤
 You may provide a definition with
 \DeclareUnicodeCharacter 
 
-[32]
+[34]
 
 sections/3_hd_streaming.tex:584: LaTeX Error: Unicode character ➖ (U+2796)
                not set up for use with LaTeX.
@@ -1248,929 +1292,133 @@ l.590     \item ➕
 You may provide a definition with
 \DeclareUnicodeCharacter 
 
-[33]) (sections/4_buffer.tex [34
+[35]) (sections/4_buffer.tex
+sections/4_buffer.tex:18: Missing $ inserted.
+<inserted text> 
+                $
+l.18 ...ịnh gần với FPS mục tiêu (TARGET_
+                                                  FPS = 50).
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+sections/4_buffer.tex:19: Missing $ inserted.
+<inserted text> 
+                $
+l.19 
+     
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+[36
 
 ]
 
-sections/4_buffer.tex:72: LaTeX Error: There's no line here to end.
+sections/4_buffer.tex:63: Package pgf Error: Unknown arrow tip kind 'Stealth'.
 
-See the LaTeX manual or LaTeX Companion for explanation.
+See the pgf package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.72 
-     
-Your command was ignored.
-Type  I <command> <return>  to replace it with another command,
-or  <return>  to continue without it.
+l.63     \draw[arrow]
+                      (rtp) -- (recv);
+This error message was generated by an \errmessage
+command, so I can't give any explicit help.
+Pretend that you're Hercule Poirot: Examine all clues,
+and deduce the truth by order and method.
 
-[35] [36]
+Missing character: There is no [ in font nullfont!
+Missing character: There is no ] in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no g in font nullfont!
+Missing character: There is no f in font nullfont!
+Missing character: There is no @ in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no p in font nullfont!
 
-sections/4_buffer.tex:216: LaTeX Error: Invalid UTF-8 byte sequence (�\expandafter\lst@FillFixed@).
+sections/4_buffer.tex:64: Package pgf Error: Unknown arrow tip kind 'Stealth'.
 
-See the LaTeX manual or LaTeX Companion for explanation.
+See the pgf package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.216                     # Kiểm 
-                                   tra buffering progress
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
+l.64     \draw[arrow]
+                      (recv) -- (buf);
+(That was another \errmessage.)
 
+Missing character: There is no [ in font nullfont!
+Missing character: There is no ] in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no g in font nullfont!
+Missing character: There is no f in font nullfont!
+Missing character: There is no @ in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no p in font nullfont!
 
-sections/4_buffer.tex:216: LaTeX Error: Invalid UTF-8 byte "BB.
+sections/4_buffer.tex:65: Package pgf Error: Unknown arrow tip kind 'Stealth'.
 
-See the LaTeX manual or LaTeX Companion for explanation.
+See the pgf package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.216                     # Kiểm 
-                                   tra buffering progress
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
+l.65     \draw[arrow]
+                      (buf) -- (play);
+(That was another \errmessage.)
 
+Missing character: There is no [ in font nullfont!
+Missing character: There is no ] in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no g in font nullfont!
+Missing character: There is no f in font nullfont!
+Missing character: There is no @ in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no p in font nullfont!
 
-sections/4_buffer.tex:216: LaTeX Error: Invalid UTF-8 byte "83.
+sections/4_buffer.tex:66: Package pgf Error: Unknown arrow tip kind 'Stealth'.
 
-See the LaTeX manual or LaTeX Companion for explanation.
+See the pgf package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.216                     # Kiểm 
-                                   tra buffering progress
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
+l.66     \draw[arrow]
+                      (play) -- (disp);
+(That was another \errmessage.)
 
+Missing character: There is no [ in font nullfont!
+Missing character: There is no ] in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no g in font nullfont!
+Missing character: There is no f in font nullfont!
+Missing character: There is no @ in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no p in font nullfont!
 [37]
-
-sections/4_buffer.tex:268: LaTeX Error: Invalid UTF-8 byte sequence (�\lst@FillFixed@\lst@EC�).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.268 ...                  self.updateStatus("✓ 
-                                                  Video ended")
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
+LaTeX Font Info:    Font shape `T5/cmtt/bx/n' in size <12> not available
+(Font)              Font shape `T5/cmtt/m/n' tried instead on input line 112.
+ [38]
+Overfull \hbox (1.23917pt too wide) in paragraph at lines 127--129
+\T5/cmtt/m/n/12 frame_corrupted = True\T5/cmr/m/n/12 , v�n n�i \T5/cmtt/m/n/12 payload \T5/cmr/m/n/12 hi�n t�i v� c�p nh�t \T5/cmtt/m/n/12 expected_seq
+ []
 
 
-sections/4_buffer.tex:268: LaTeX Error: Invalid UTF-8 byte "93.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.268 ...                  self.updateStatus("✓ 
-                                                  Video ended")
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-
-sections/4_buffer.tex:269: LaTeX Error: Invalid UTF-8 byte sequence (�\expandafter\lst@FillFixed@\fi).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.269                         print("\n🎬 
-                                            VIDEO ENDED - No more frames")
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-
-sections/4_buffer.tex:269: LaTeX Error: Invalid UTF-8 byte "9F.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.269                         print("\n🎬 
-                                            VIDEO ENDED - No more frames")
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-
-sections/4_buffer.tex:269: LaTeX Error: Invalid UTF-8 byte "8E.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.269                         print("\n🎬 
-                                            VIDEO ENDED - No more frames")
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-
-sections/4_buffer.tex:269: LaTeX Error: Invalid UTF-8 byte "AC.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.269                         print("\n🎬 
-                                            VIDEO ENDED - No more frames")
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-sections/4_buffer.tex:269: Extra \else.
-\lst@PrintToken ...@Output \lst@letterfalse \else 
-                                                  \lst@OutputOther \let \lst...
-l.269                         print("\n🎬 
-                                            VIDEO ENDED - No more frames")
-I'm ignoring this; it doesn't match any \if.
-
-
-sections/4_buffer.tex:274: LaTeX Error: Invalid UTF-8 byte sequence (�\lst@FillFixed@\lst@EC�).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.274                     self.updateStatus("⚠ 
-                                                 Buffer underrun - waiting...")
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-
-sections/4_buffer.tex:274: LaTeX Error: Invalid UTF-8 byte "A0.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.274                     self.updateStatus("⚠ 
-                                                 Buffer underrun - waiting...")
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-
-sections/4_buffer.tex:287: LaTeX Error: Invalid UTF-8 byte sequence (�\lst@FillFixed@\lst@EC�).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.287                     self.updateStatus(f"⚠ 
-                                                  Buffer low: {buffer_level}")
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-
-sections/4_buffer.tex:287: LaTeX Error: Invalid UTF-8 byte "A0.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.287                     self.updateStatus(f"⚠ 
-                                                  Buffer low: {buffer_level}")
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-[38]
-
-sections/4_buffer.tex:326: LaTeX Error: Invalid UTF-8 byte sequence (�\lst@FillFixed@\lst@EC�).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.326                     self.updateStatus(f"✓ 
-                                                  Buffer healthy: {buffer_le...
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-
-sections/4_buffer.tex:326: LaTeX Error: Invalid UTF-8 byte "93.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.326                     self.updateStatus(f"✓ 
-                                                  Buffer healthy: {buffer_le...
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-
-sections/4_buffer.tex:328: LaTeX Error: Invalid UTF-8 byte sequence (�\lst@FillFixed@\lst@EC�).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.328                     self.updateStatus(f"▶ 
-                                                  Playing - Buffer: {buffer_...
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
-
-
-sections/4_buffer.tex:328: LaTeX Error: Invalid UTF-8 byte "B6.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.328                     self.updateStatus(f"▶ 
-                                                  Playing - Buffer: {buffer_...
-The document does not appear to be in UTF-8 encoding.
-Try adding \UseRawInputEncoding as the first line of the file
-or specify an encoding such as \usepackage [latin1]{inputenc}
-in the document preamble.
-Alternatively, save the file in UTF-8 using your editor or another tool
+Overfull \hbox (8.2238pt too wide) in paragraph at lines 133--134
+[]\T5/cmr/m/n/12 N�u \T5/cmtt/m/n/12 frame_corrupted=True \T5/cmr/m/n/12 th� lo�i b� frame n�y (tr�nh l�i JPEG b� h�ng/trun-
+ []
 
 [39]
-sections/4_buffer.tex:346: You can't use `macro parameter character #' in vertical mode.
-l.346         #
-                Buffer underrun - doi them
-Sorry, but I'm not programmed to handle this case;
-I'll just pretend that you didn't ask for it.
-If you're in the wrong mode, you might be able to
-return to the right one by typing `I}' or `I$' or `I\par'.
-
-
-sections/4_buffer.tex:347: LaTeX Error: Unicode character ⚠ (U+26A0)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.347         self.updateStatus("⚠
-                                     Buffer underrun - waiting...")
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:350: Undefined control sequence.
-\lstlisting ->\def \lstenv@name 
-                                {lstlisting}\begingroup \lst@setcatcodes \ca...
-l.350 \end{lstlisting}
-                      
-The control sequence at the end of the top line
-of your error message was never \def'ed. If you have
-misspelled it (e.g., `\hobx'), type `I' and the correct
-spelling (e.g., `I\hbox'). Otherwise just continue,
-and I'll forget about whatever was undefined.
-
-sections/4_buffer.tex:350: Package Listings Error: Extra \endlstlisting.
-
-See the Listings package documentation for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.350 \end{lstlisting}
-                      
-I'm ignoring this, since I wasn't doing a \def {lstlisting}\begingroup \makeatletter \catcode `\==12\relax \catcode \active =\active \lstlisting@.
-
-
-sections/4_buffer.tex:350: LaTeX Error: \begin{document} ended by \end{lstlisting}.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.350 \end{lstlisting}
-                      
-Your command was ignored.
-Type  I <command> <return>  to replace it with another command,
-or  <return>  to continue without it.
-
-sections/4_buffer.tex:350: Extra \endgroup.
-<recently read> \endgroup 
-                          
-l.350 \end{lstlisting}
-                      
-Things are pretty mixed up, but I think the worst is over.
-
-
-Overfull \hbox (27.2367pt too wide) in paragraph at lines 346--351
-[]\T5/cmr/m/n/12 Buffer un-der-run - doi them self.updateStatus(" Buffer un-der-run - wait-ing...") time.sleep(0.1)
- []
-
-[40] [41] [42] [43]
-
-sections/4_buffer.tex:561: LaTeX Error: Unicode character ❌ (U+274C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.561     \item ❌
-                    "Tăng \texttt{maxlen} của deque sẽ giảm packet loss"
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:562: LaTeX Error: Unicode character ❌ (U+274C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.562     \item ❌
-                    "Dùng unbounded deque (không giới hạn) → loss = ...
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:563: LaTeX Error: Unicode character ❌ (U+274C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.563     \item ❌
-                    "Buffer lớn = ít mất gói hơn"
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:582: LaTeX Error: Unicode character ✗ (U+2717)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.582     ✗
-              Network congestion \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:583: LaTeX Error: Unicode character ✗ (U+2717)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.583     ✗
-              Wi-Fi interference \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:584: LaTeX Error: Unicode character ✗ (U+2717)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.584     ✗
-              Kernel buffer đầy
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:589: LaTeX Error: Unicode character ✓ (U+2713)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.589     ✓
-              Chống jitter \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:590: LaTeX Error: Unicode character ✓ (U+2713)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.590     ✓
-              Smooth playback \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:591: LaTeX Error: Unicode character ✓ (U+2713)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.591     ✓
-              Absorb burst
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-LaTeX Font Info:    Font shape `T5/cmtt/bx/n' in size <12> not available
-(Font)              Font shape `T5/cmtt/m/n' tried instead on input line 599.
-[44]
-
-sections/4_buffer.tex:681: LaTeX Error: Unicode character ✓ (U+2713)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.681 ... (25 × 3) + 25 = \textbf{100 frames} ✓
-                                                  
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:698: LaTeX Error: Unicode character ❌ (U+274C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.698 20 & 0.8s & ~2 MB & ❌
-                              Yếu \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:699: LaTeX Error: Unicode character ⚠ (U+26A0)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.699 50 & 2s & ~5 MB & ⚠
-                           ️ Trung bình \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:699: LaTeX Error: Unicode character ️ (U+FE0F)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.699 50 & 2s & ~5 MB & ⚠️
-                               Trung bình \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:700: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.700 100 & 4s & ~10 MB & ✅
-                              Tốt \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:701: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.701 200 & 8s & ~20 MB & ✅
-                             ✅ Rất tốt \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:701: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.701 200 & 8s & ~20 MB & ✅✅
-                                 Rất tốt \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:702: LaTeX Error: Unicode character ⚠ (U+26A0)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.702 500 & 20s & ~50 MB & ⚠
-                              ️ Quá lớn \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:702: LaTeX Error: Unicode character ️ (U+FE0F)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.702 500 & 20s & ~50 MB & ⚠️
-                                  Quá lớn \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:703: LaTeX Error: Unicode character ❌ (U+274C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.703 Unbounded & Vô hạn & Tràn RAM & ❌
-                                              Crash \\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-[45]
-
-sections/4_buffer.tex:737: LaTeX Error: Unicode character ❌ (U+274C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.737     \item ❌
-                    Buffer KHÔNG giảm packet loss ở network
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:738: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.738     \item ✅
-                    Buffer giúp CHỐNG CHỊU loss tốt hơn (avoid under...
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:739: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.739     \item ✅
-                    \texttt{maxlen} = circuit breaker (tránh memory leak)
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:740: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.740     \item ✅
-                    Tính \texttt{maxlen} dựa trên burst duration, không...
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:741: LaTeX Error: Unicode character ⚖ (U+2696)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.741     \item ⚖
-                   ️ Trade-off: latency vs resilience
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:741: LaTeX Error: Unicode character ️ (U+FE0F)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.741     \item ⚖️
-                       Trade-off: latency vs resilience
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-[46]
-
-sections/4_buffer.tex:759: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.759     \item ✅
-                    Giảm jitter và stuttering
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:760: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.760     \item ✅
-                    Smooth playback với constant frame rate
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:761: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.761     \item ✅
-                    Tự động recovery từ buffer underrun
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:762: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.762     \item ✅
-                    Adaptive threshold theo network quality
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:763: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.763     \item ✅
-                    GUI feedback về buffer status
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:764: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.764     \item ✅
-                    Chống chịu burst packet loss hiệu quả
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:769: LaTeX Error: Unicode character ➖ (U+2796)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.769     \item ➖
-                    Tăng initial latency (800ms cho 20 frames @ 25 FPS)
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:770: LaTeX Error: Unicode character ➖ (U+2796)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.770     \item ➖
-                    Memory overhead ~10MB cho 100 Full HD frames
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:771: LaTeX Error: Unicode character ➕ (U+2795)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.771     \item ➕
-                    Smooth playback 98\% (giảm 90\% stuttering)
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:772: LaTeX Error: Unicode character ➕ (U+2795)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.772     \item ➕
-                    Chống jitter và burst loss với buffer 4 giây
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:773: LaTeX Error: Unicode character ➕ (U+2795)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.773     \item ➕
-                    End-of-stream detection chính xác
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:774: LaTeX Error: Unicode character ➕ (U+2795)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.774     \item ➕
-                    Circuit breaker (bounded) tránh memory leak
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:779: LaTeX Error: Unicode character ❌ (U+274C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.779     \item ❌
-                    \textbf{Bounded buffer KHÔNG giảm packet loss} — lo...
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:780: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.780     \item ✅
-                    \textbf{Buffer giúp CHỐNG CHỊU loss} — tránh und...
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:781: LaTeX Error: Unicode character ✅ (U+2705)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.781     \item ✅
-                    \textbf{maxlen = circuit breaker} — tránh unbounded g...
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:782: LaTeX Error: Unicode character 📐 (U+1F4D0)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.782     \item 📐
-                     \textbf{Công thức:} \texttt{maxlen = (FPS × burst\_...
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:783: LaTeX Error: Unicode character ⚖ (U+2696)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.783     \item ⚖
-                   ️ \textbf{Trade-off:} Latency thấp (maxlen nhỏ) vs ...
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-sections/4_buffer.tex:783: LaTeX Error: Unicode character ️ (U+FE0F)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.783     \item ⚖️
-                       \textbf{Trade-off:} Latency thấp (maxlen nhỏ) vs ...
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-Overfull \hbox (2.10785pt too wide) in paragraph at lines 786--787
-[]\T5/cmr/bx/n/12 K�t lu�n: \T5/cmr/m/n/12 Deque-based buffer-ing v�i \T5/cmtt/m/n/12 maxlen=100 \T5/cmr/m/n/12 frames v� \T5/cmtt/m/n/12 buffer_target=20 \T5/cmr/m/n/12 frames
- []
-
-[47] [48]) (sections/5_ket_luan.tex [49
-
-]
+<GUI.png, id=1349, 963.6pt x 504.38437pt>
+File: GUI.png Graphic file (type png)
+<use GUI.png>
+Package pdftex.def Info: GUI.png  used on input line 199.
+(pdftex.def)             Requested size: 432.48051pt x 226.37056pt.
+ [40] [41 <./GUI.png>]) (sections/5_ket_luan.tex [42]
 
 sections/5_ket_luan.tex:113: LaTeX Error: Unicode character ≤ (U+2264)
                not set up for use with LaTeX.
@@ -2184,7 +1432,7 @@ l.113 RTP packet size & ≤
 You may provide a definition with
 \DeclareUnicodeCharacter 
 
-[50]
+[43]
 
 sections/5_ket_luan.tex:126: LaTeX Error: Unicode character ✅ (U+2705)
                not set up for use with LaTeX.
@@ -2246,31 +1494,30 @@ Type  H <return>  for immediate help.
  ...                                              
                                                   
 l.130     \item ✅
-                    Stable frame rate 25 FPS
+                    Stable frame rate 50 FPS với pre-buffering 60 frames
 You may provide a definition with
 \DeclareUnicodeCharacter 
 
-[51] [52] [53] (REPORT_RTSP_RTP.aux)
+[44] [45] [46] (REPORT_RTSP_RTP.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-04>
  ***********
 Package rerunfilecheck Info: File `REPORT_RTSP_RTP.out' has not changed.
-(rerunfilecheck)             Checksum: A400E3346293F1F68C282FE5F6B6EA94;21137.
- ) )
-(\end occurred when \iftrue on line 269 was incomplete) 
+(rerunfilecheck)             Checksum: 7B8A9D37DE69F6FA5D5E1C8108881AEF;17970.
+ ) ) 
 Here is how much of TeX's memory you used:
- 25790 strings out of 474486
- 459894 string characters out of 5753572
+ 25481 strings out of 474486
+ 455582 string characters out of 5753572
  2393542 words of memory out of 5000000
- 46493 multiletter control sequences out of 15000+600000
- 574089 words of font info for 65 fonts, out of 8000000 for 9000
+ 46494 multiletter control sequences out of 15000+600000
+ 578456 words of font info for 74 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,14n,93p,675b,2181s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\User\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tctt1200.pk> <C:\Users\User\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1200.pk><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnbx12.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnr12.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnr17.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnr6.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnr8.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vntt10.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vntt12.pfb>
-Output written on REPORT_RTSP_RTP.pdf (54 pages, 659477 bytes).
+ 84i,13n,93p,1032b,2181s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\User\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tctt1200.pk> <C:\Users\User\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1200.pk><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnbx10.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnbx12.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnr10.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnr12.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnr17.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnr6.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnr8.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vnti12.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vntt10.pfb><C:/Users/User/AppData/Roaming/MiKTeX/fonts/type1/vntex/vnr/vntt12.pfb>
+Output written on REPORT_RTSP_RTP.pdf (47 pages, 1856763 bytes).
 PDF statistics:
- 2118 PDF objects out of 2487 (max. 8388607)
- 1175 named destinations out of 1200 (max. 500000)
- 935 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1657 PDF objects out of 1728 (max. 8388607)
+ 863 named destinations out of 1000 (max. 500000)
+ 759 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -37,9 +37,22 @@ class Client:
         self.requestSent = -1
         self.teardownAcked = 0
         self.frameNbr = 0
+
+        # --- For retransmission (NACK/RESEND) ---
+        self.missing_seqs = set()
+        self.frame_deadline = None
+        self.FRAME_RESEND_TIMEOUT = 0.15   # 150ms đợi resend (tùy mạng)
+        self.current_frame_frags = {}
+        # Retransmission statistics
+        self.resend_requests_sent = 0      # Số lần gửi RESEND request
+        self.packets_retransmitted = 0     # Số packet được gửi lại thành công
+        self.packets_recovered = 0         # Số packet cứu lại được sau retrans
         
         # Fragment reassembly
         self.current_frame_data = b''
+        self.current_frame_ts = None      # timestamp của frame đang ghép
+        self.expected_seq = None          # seq mong đợi tiếp theo trong frame
+        self.frame_corrupted = False      # frame bị lỗi do mất gói/out-of-order
         self.last_timestamp = -1
         
         # Frame buffer for smooth playback
@@ -61,8 +74,50 @@ class Client:
         self.frame_receive_start = None
         self.frame_assembly_times = []
         # Socket error tracking
-        self.socket_buffer_overflows = 0 
+        self.socket_buffer_overflows = 0
+        
+        # Initialize RTSP socket to None before connection
+        self.rtspSocket = None
         self.connectToServer()
+        self.playEvent = threading.Event()
+        self.playEvent.clear()
+
+    def sendResendRequest(self, missing_ranges: str):
+        """
+        missing_ranges ví dụ: "1200-1210,1215,1220-1222"
+        """
+        try:
+            # Chỉ gửi khi đã có socket và đã qua SETUP
+            if not hasattr(self, "rtspSocket") or self.rtspSocket is None or self.state == self.INIT:
+                return  # Chưa kết nối RTSP, bỏ qua
+            self.rtspSeq += 1
+            request = (
+                f"RESEND {self.fileName} RTSP/1.0\n"
+                f"CSeq: {self.rtspSeq}\n"
+                f"Session: {self.sessionId}\n"
+                f"Missing: {missing_ranges}\n"
+            )
+            self.rtspSocket.send(request.encode("utf-8"))
+            self.resend_requests_sent += 1
+            # print("Sent RESEND:", missing_ranges)
+        except Exception as e:
+            print("RESEND send error:", e)
+
+    def seqs_to_ranges(self, seqs):
+        seqs = sorted(seqs)
+        if not seqs:
+            return ""
+        ranges = []
+        start = prev = seqs[0]
+        for s in seqs[1:]:
+            if s == prev + 1:
+                prev = s
+            else:
+                ranges.append(f"{start}-{prev}" if start != prev else f"{start}")
+                start = prev = s
+        ranges.append(f"{start}-{prev}" if start != prev else f"{start}")
+        return ",".join(ranges)
+
     
     def createWidgets(self):
         """Build enhanced GUI với statistics panel"""
@@ -109,7 +164,9 @@ class Client:
             ('quality', 'Quality:'),
             ('loss', 'Packet Loss:'),
             ('jitter', 'Jitter:'),
-            ('frames', 'Frames:')
+            ('frames', 'Frames:'),
+            ('nack', 'NACK:'),
+            ('retrans', 'Retransmissions:')
         ]
         
         for i, (key, text) in enumerate(stats_items):
@@ -131,7 +188,7 @@ class Client:
         self.status_bar.grid(row=3, column=0, columnspan=4, sticky=W+E, padx=5, pady=2)
         
         # Buffer status panel
-        self.buffer_frame = LabelFrame(self.master, text="📦 Buffer Status", padx=10, pady=5)
+        self.buffer_frame = LabelFrame(self.master, text="Buffer Status", padx=10, pady=5)
         self.buffer_frame.grid(row=4, column=0, columnspan=4, sticky=W+E, padx=5, pady=5)
         
         self.buffer_progress = ttk.Progressbar(
@@ -149,7 +206,7 @@ class Client:
             self.sendRtspRequest(self.SETUP)
             # Bắt đầu buffering ngay sau SETUP
             self.buffering = True
-            self.updateStatus("🔄 Buffering frames...")
+            self.updateStatus("Buffering frames...")
     
     def playMovie(self):
         if self.state == self.READY:
@@ -171,8 +228,6 @@ class Client:
             # Stats display
             threading.Thread(target=self.updateStatsDisplay, daemon=True).start()
             
-            self.playEvent = threading.Event()
-            self.playEvent.clear()
             self.sendRtspRequest(self.PLAY)
     
     def pauseMovie(self):
@@ -193,7 +248,7 @@ class Client:
         # Print final statistics
         stats = self.network_analyzer.get_stats()
         print("\n" + "="*60)
-        print("📊 FINAL STATISTICS REPORT")
+        print("FINAL STATISTICS REPORT")
         print("="*60)
         print(f"Total Runtime:     {stats['runtime_sec']} seconds")
         print(f"Total Frames:      {self.frameNbr}")
@@ -212,102 +267,156 @@ class Client:
         os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT)
     
     def listenRtp(self):
-        """Enhanced RTP listener với network analysis"""
+        """Enhanced RTP listener with retransmission (NACK/RESEND) support"""
+        import time
         while True:
             try:
                 data = self.rtpSocket.recv(20480)
                 if data:
                     rtpPacket = RtpPacket()
                     rtpPacket.decode(data)
-                    
+
                     curr_timestamp = rtpPacket.timestamp()
                     marker = rtpPacket.marker()
                     payload = rtpPacket.getPayload()
                     seq_num = rtpPacket.seqNum()
-                    
-                    # Record packet for analysis
+
                     self.network_analyzer.record_packet(seq_num, len(data), curr_timestamp)
-                    
-                    # Start timing frame assembly
-                    if len(self.current_frame_data) == 0:
+
+                    # --- Frame boundary logic ---
+                    if not hasattr(self, 'current_frame_ts') or self.current_frame_ts is None:
+                        self.current_frame_ts = curr_timestamp
+                        self.expected_seq = seq_num
+                        self.frame_marker_received = False
+                        self.frame_deadline = None
+                        self.missing_seqs = set()
+                        self.current_frame_frags = {}
                         self.frame_receive_start = time.time()
-                    
-                    # Handle packet loss detection
-                    if self.last_timestamp != -1 and curr_timestamp != self.last_timestamp:
-                        if len(self.current_frame_data) > 0:
-                            self.updateStatus(f"⚠ Frame incomplete, discarding...")
-                        self.current_frame_data = b''
-                    
-                    # Accumulate fragments
-                    self.current_frame_data += payload
-                    
-                    # Complete frame received
+
+                    # New frame (timestamp changed)
+                    if curr_timestamp != self.current_frame_ts:
+                        # Drop incomplete frame if marker not received
+                        if not self.frame_marker_received and self.current_frame_frags:
+                            self.updateStatus("⚠ Frame incomplete (timestamp jumped) -> drop")
+                        # Reset for new frame
+                        self.current_frame_ts = curr_timestamp
+                        self.expected_seq = seq_num
+                        self.frame_marker_received = False
+                        self.frame_deadline = None
+                        self.missing_seqs = set()
+                        self.current_frame_frags = {}
+                        self.frame_receive_start = time.time()
+
+                    # --- RTP fragment reassembly ---
+                    # Detect missing packets
+                    if self.expected_seq is None:
+                        self.expected_seq = seq_num
+
+                    if seq_num == self.expected_seq:
+                        self.expected_seq += 1
+                    elif seq_num > self.expected_seq:
+                        # Gap detected
+                        missing = set(range(self.expected_seq, seq_num))
+                        self.missing_seqs.update(missing)
+                        # Send RESEND request
+                        missing_ranges = self.seqs_to_ranges(self.missing_seqs)
+                        if missing_ranges:
+                            self.sendResendRequest(missing_ranges)
+                        # Set deadline if not already set
+                        if self.frame_deadline is None:
+                            self.frame_deadline = time.time() + self.FRAME_RESEND_TIMEOUT
+                        self.expected_seq = seq_num + 1
+                    else:
+                        # seq_num < expected_seq: out-of-order/duplicate
+                        # Accept if it's a missing one
+                        if seq_num in self.missing_seqs:
+                            self.missing_seqs.remove(seq_num)
+                            self.packets_retransmitted += 1  # Packet retransmitted successfully
+                            self.packets_recovered += 1      # Successfully recovered
+                        else:
+                            continue
+
+                    # Store fragment
+                    self.current_frame_frags[seq_num] = payload
+
+                    # If marker received, note it
                     if marker == 1:
-                        self.frameNbr += 1
-                        
-                        # Record frame completion time
-                        if self.frame_receive_start:
-                            assembly_time = time.time() - self.frame_receive_start
-                            self.frame_assembly_times.append(assembly_time)
-                        
-                        # Lưu frame vào buffer thay vì hiển thị ngay
-                        frame_info = {
-                            'number': self.frameNbr,
-                            'data': self.current_frame_data,
-                            'timestamp': curr_timestamp,
-                            'size': len(self.current_frame_data)
-                        }
-                        
-                        with self.buffer_lock:
-                            self.frame_buffer.append(frame_info)
-                        
-                        # Kiểm tra buffering progress
-                        if self.buffering:
-                            buffer_size = len(self.frame_buffer)
-                            self.updateStatus(
-                                f"🔄 Buffering... {buffer_size}/{self.buffer_target} frames"
-                            )
-                            
-                            # Đủ buffer → sẵn sàng play
-                            if buffer_size >= self.buffer_target:
-                                self.buffering = False
-                                self.updateStatus("✓ Buffer ready - Press PLAY")
-                        
-                        # Network analysis vẫn chạy
-                        self.network_analyzer.record_frame()
-                        
-                        # Check adaptive quality adjustment
-                        stats = self.network_analyzer.get_stats()
-                        adjustment = self.adaptive_controller.should_adjust(stats)
-                        if adjustment:
-                            self.adaptive_controller.adjust_quality(adjustment)
-                            self.sendQualityUpdate()
-                        
-                        self.current_frame_data = b''
-                        self.frame_receive_start = None
-                    
+                        self.frame_marker_received = True
+                        # Set deadline if not already set
+                        if self.frame_deadline is None and self.missing_seqs:
+                            self.frame_deadline = time.time() + self.FRAME_RESEND_TIMEOUT
+
+                    # Check if frame is complete (after every packet)
+                    if self.frame_marker_received:
+                        # Check if all missing packets have arrived
+                        if not self.missing_seqs:
+                            # Frame complete! Assemble it
+                            assembled = b''.join(self.current_frame_frags[k] for k in sorted(self.current_frame_frags))
+                            self.frameNbr += 1
+                            if self.frame_receive_start:
+                                assembly_time = time.time() - self.frame_receive_start
+                                self.frame_assembly_times.append(assembly_time)
+                            frame_info = {
+                                'number': self.frameNbr,
+                                'data': assembled,
+                                'timestamp': curr_timestamp,
+                                'size': len(assembled)
+                            }
+                            with self.buffer_lock:
+                                self.frame_buffer.append(frame_info)
+                            if self.buffering:
+                                buffer_size = len(self.frame_buffer)
+                                self.updateStatus(f"Buffering... {buffer_size}/{self.buffer_target} frames")
+                                if buffer_size >= self.buffer_target:
+                                    self.buffering = False
+                                    self.updateStatus("Buffer ready - Press PLAY")
+                            self.network_analyzer.record_frame()
+                            stats = self.network_analyzer.get_stats()
+                            adjustment = self.adaptive_controller.should_adjust(stats)
+                            if adjustment:
+                                self.adaptive_controller.adjust_quality(adjustment)
+                                self.sendQualityUpdate()
+                            # Reset for next frame
+                            self.current_frame_ts = None
+                            self.expected_seq = None
+                            self.frame_marker_received = False
+                            self.frame_deadline = None
+                            self.missing_seqs = set()
+                            self.current_frame_frags = {}
+                            self.frame_receive_start = None
+                            self.last_timestamp = curr_timestamp
+                            continue
+                        elif self.frame_deadline is not None and time.time() > self.frame_deadline:
+                            # Timeout waiting for retransmission - discard frame
+                            self.updateStatus(f"Frame timeout (still missing {len(self.missing_seqs)} packets)")
+                            # Reset for next frame
+                            self.current_frame_ts = None
+                            self.expected_seq = None
+                            self.frame_marker_received = False
+                            self.frame_deadline = None
+                            self.missing_seqs = set()
+                            self.current_frame_frags = {}
+                            self.frame_receive_start = None
+                            self.last_timestamp = curr_timestamp
+                            continue
+
                     self.last_timestamp = curr_timestamp
-            
             except socket.timeout:
-                # Kiểm tra nếu không nhận packet trong thời gian dài
                 if self.state == self.PLAYING:
                     with self.buffer_lock:
                         if len(self.frame_buffer) == 0 and self.playback_active:
-                            # Có thể đã hết video
                             pass
                 continue
             except socket.error as e:
-                # Detect socket buffer overflow
                 import errno
                 if hasattr(e, 'errno'):
                     if e.errno == errno.ENOBUFS or e.errno == errno.ENOMEM:
                         self.socket_buffer_overflows += 1
                         print(f"Socket Buffer Overflows: {self.socket_buffer_overflows}")
-                        print("⚠ WARNING: Socket buffer overflow - packets dropped!")
-                        print("   → Consider: reduce bitrate or increase SO_RCVBUF")
+                        print("WARNING: Socket buffer overflow - packets dropped!")
+                        print("Consider: reduce bitrate or increase SO_RCVBUF")
                     elif e.errno == errno.ECONNRESET:
-                        print("⚠ Connection reset by peer")
-                
+                        print("Connection reset by peer")
                 if self.playEvent.isSet():
                     break
                 if self.teardownAcked == 1:
@@ -317,10 +426,9 @@ class Client:
                     except:
                         pass
                     break
-            
             except Exception as e:
                 # Catch-all cho các exceptions khác
-                print(f"⚠ Unexpected error in listenRtp: {type(e).__name__}: {e}")
+                print(f"Unexpected error in listenRtp: {type(e).__name__}: {e}")
                 if self.playEvent.isSet():
                     break
     
@@ -345,14 +453,38 @@ class Client:
                 self.stats_labels['quality'].config(
                     text=f"{quality} ({self.adaptive_controller.get_mtu()})"
                 )
-                self.stats_labels['loss'].config(
-                    text=f"{stats['loss_rate']}% ({stats['lost_packets']} packets)"
-                )
+                
+                # Calculate raw and effective loss
+                raw_lost = stats.get('lost_packets', 0)
+                raw_rate = stats.get('loss_rate', 0)
+                effective_lost = max(0, raw_lost - getattr(self, "packets_recovered", 0))
+                total_pkts = stats.get('total_packets', 0)
+                
+                if total_pkts > 0:
+                    eff_rate = (effective_lost / total_pkts * 100)
+                    loss_text = f"raw {raw_rate:.1f}% ({raw_lost}) | eff {eff_rate:.1f}% ({effective_lost})"
+                else:
+                    loss_text = f"raw {raw_rate:.1f}% ({raw_lost}) | eff ({effective_lost})"
+                
+                self.stats_labels['loss'].config(text=loss_text)
+                
                 self.stats_labels['jitter'].config(
                     text=f"{stats['jitter_ms']} ms"
                 )
                 self.stats_labels['frames'].config(
                     text=f"{self.frameNbr} ({stats['total_mb']} MB)"
+                )
+                
+                # NACK requests sent
+                self.stats_labels['nack'].config(
+                    text=f"{self.resend_requests_sent} sent",
+                    fg="orange" if self.resend_requests_sent > 0 else "blue"
+                )
+                
+                # Retransmissions received
+                self.stats_labels['retrans'].config(
+                    text=f"{getattr(self, 'packets_recovered', 0)} recv",
+                    fg="green" if getattr(self, 'packets_recovered', 0) > 0 else "blue"
                 )
                 
                 # Update buffer display
@@ -383,11 +515,11 @@ class Client:
                     if len(self.frame_buffer) == 0:
                         empty_buffer_count += 1
                         
-                        # Nếu buffer trống quá lâu (2 giây) → Có thể hết video
+                        # Nếu buffer trống quá lâu (5 giây) → Có thể hết video
                         if empty_buffer_count > 50:  # 50 * 0.1s = 5 giây
                             self.end_of_stream = True
                             self.updateStatus("✓ Video ended")
-                            print("\n🎬 VIDEO ENDED - No more frames received")
+                            print("\nVIDEO ENDED - No more frames received")
                             tkMessageBox.showinfo(
                                 'Video Ended', 
                                 f'Video playback completed!\n\nTotal frames played: {self.frameNbr}'
@@ -396,7 +528,7 @@ class Client:
                             break
                         
                         # Buffer empty - đợi thêm
-                        self.updateStatus("⚠ Buffer underrun - waiting...")
+                        self.updateStatus("Buffer underrun - waiting...")
                         time.sleep(0.1)
                         continue
                     
@@ -411,11 +543,11 @@ class Client:
                     # Update buffer status
                     buffer_level = len(self.frame_buffer)
                     if buffer_level < 10:
-                        self.updateStatus(f"⚠ Buffer low: {buffer_level} frames")
+                        self.updateStatus(f"Buffer low: {buffer_level} frames")
                     elif buffer_level > 50:
-                        self.updateStatus(f"✓ Buffer healthy: {buffer_level} frames")
+                        self.updateStatus(f"Buffer healthy: {buffer_level} frames")
                     else:
-                        self.updateStatus(f"▶ Playing - Buffer: {buffer_level} frames")
+                        self.updateStatus(f"Playing - Buffer: {buffer_level} frames")
                     
                 except Exception as e:
                     print(f"Display error: {e}")
@@ -492,6 +624,9 @@ class Client:
             return
         
         try:
+            if self.rtspSocket is None:
+                print("Send error: RTSP socket not connected")
+                return
             self.rtspSocket.send(request.encode("utf-8"))
         except Exception as e:
             print(f"Send error: {e}")
@@ -527,14 +662,14 @@ class Client:
                             self.openRtpPort()
                             # Bắt đầu lắng nghe RTP ngay để nhận pre-buffering frames
                             threading.Thread(target=self.listenRtp, daemon=True).start()
-                            self.updateStatus("✓ Ready to play")
+                            self.updateStatus("Ready to play")
                         elif self.requestSent == self.PLAY:
                             self.state = self.PLAYING
-                            self.updateStatus("▶ Playing...")
+                            self.updateStatus("Playing...")
                         elif self.requestSent == self.PAUSE:
                             self.state = self.READY
                             self.playEvent.set()
-                            self.updateStatus("⏸ Paused")
+                            self.updateStatus("Paused")
                         elif self.requestSent == self.TEARDOWN:
                             self.state = self.INIT
                             self.teardownAcked = 1

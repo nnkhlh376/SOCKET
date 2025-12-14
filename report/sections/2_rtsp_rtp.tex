@@ -8,10 +8,52 @@
 \textbf{Phần này chỉ bao gồm triển khai CƠ BẢN của giao thức RTSP và RTP, KHÔNG bao gồm các tính năng mở rộng như frame fragmentation cho HD video.}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{mermaid_diagram.png}
-    \caption{Sơ đồ tương tác RTSP/RTP giữa Client và Server}
+\centering
+\begin{tikzpicture}[>=stealth, font=\small]
+    % Participants
+    \node (user) at (0,0) {\textbf{User}};
+    \node (client) at (4,0) {\textbf{Client}};
+    \node (server) at (8,0) {\textbf{Server}};
+    
+    % Lifelines
+    \draw[thick] (0,-0.5) -- (0,-12);
+    \draw[thick] (4,-0.5) -- (4,-12);
+    \draw[thick] (8,-0.5) -- (8,-12);
+    
+    % SETUP
+    \draw[->, thick] (0,-1) -- node[above, font=\scriptsize] {Click Setup} (4,-1);
+    \draw[->, thick, blue] (4,-1.5) -- node[above, font=\scriptsize] {SETUP (TCP)} (8,-1.5);
+    \draw[<-, thick, blue] (4,-2) -- node[above, font=\scriptsize] {200 OK + Session} (8,-2);
+    
+    % PLAY
+    \draw[->, thick] (0,-3) -- node[above, font=\scriptsize] {Click Play} (4,-3);
+    \draw[->, thick, blue] (4,-3.5) -- node[above, font=\scriptsize] {PLAY (TCP)} (8,-3.5);
+    \draw[<-, thick, blue] (4,-4) -- node[above, font=\scriptsize] {200 OK} (8,-4);
+    
+    % RTP Loop
+    \draw[dashed] (3,-4.5) rectangle (8.5,-7);
+    \node[font=\scriptsize] at (5.75,-4.7) {Loop: Each frame};
+    \draw[<-, thick, red, dashed] (4,-5.5) -- node[above, font=\scriptsize] {RTP Packet (UDP)} (8,-5.5);
+    \draw[->, thick] (4,-6.3) -- node[above, font=\scriptsize] {Display} (0,-6.3);
+    
+    % PAUSE
+    \draw[->, thick] (0,-8) -- node[above, font=\scriptsize] {Click Pause} (4,-8);
+    \draw[->, thick, blue] (4,-8.5) -- node[above, font=\scriptsize] {PAUSE (TCP)} (8,-8.5);
+    \draw[<-, thick, blue] (4,-9) -- node[above, font=\scriptsize] {200 OK} (8,-9);
+    
+    % TEARDOWN
+    \draw[->, thick] (0,-10) -- node[above, font=\scriptsize] {Click Teardown} (4,-10);
+    \draw[->, thick, blue] (4,-10.5) -- node[above, font=\scriptsize] {TEARDOWN (TCP)} (8,-10.5);
+    \draw[<-, thick, blue] (4,-11) -- node[above, font=\scriptsize] {200 OK} (8,-11);
+    
+    % Legend
+    \node[font=\scriptsize, blue] at (6,-12.5) {Blue: RTSP/TCP};
+    \node[font=\scriptsize, red] at (6,-13) {Red dashed: RTP/UDP};
+\end{tikzpicture}
+\caption{Sequence Diagram: RTSP/RTP Video Streaming Flow}
+\label{fig:rtsp-sequence}
 \end{figure}
+
 
 \subsection{RTSP Protocol - Client Side}
 

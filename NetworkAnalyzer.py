@@ -54,7 +54,11 @@ class NetworkAnalyzer:
                     self.late_packets += 1
                     print(f"⚠ Late packet: seq {seq_num}")
         
-        self.expected_seq = seq_num + 1
+        if self.expected_seq is None:
+            self.expected_seq = seq_num + 1
+        else:
+            if seq_num >= self.expected_seq:
+                self.expected_seq = seq_num + 1
         self.last_seq = seq_num
         self.seq_history.add(seq_num)
         

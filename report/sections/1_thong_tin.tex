@@ -5,14 +5,16 @@
 -   Danh sách thành viên: \\
 \begin{table}[h!]
 \centering
-\begin{tabular}{|c|c|l|l|}
+\small
+\begin{tabular}{|c|l|l|p{5cm}|c|}
 \hline
-\textbf{STT} & \textbf{MSSV} & \textbf{Họ và tên} & \textbf{Vai trò} \\ \hline
-01           & 24127078      & Nguyễn Hữu Gia Minh     & Thành viên      \\ \hline
-02           & 24127197      & Nguyễn Khánh Linh       & Thành viên      \\ \hline
-03           & 24127505      & Trần Hoàng Phúc         & Nhóm trưởng     \\ \hline
+ \textbf{MSSV} & \textbf{Họ và tên} & \textbf{Vai trò} & \textbf{Phân chia công việc} & \textbf{Tỉ lệ hoàn thành} \\ \hline
+ 24127078      & Nguyễn Hữu Gia Minh     & Thành viên & \parbox[t]{5cm}{HD Video Streaming \\ Viết báo cáo.} & 100 \\ \hline
+ 24127197      & Nguyễn Khánh Linh       & Thành viên & \parbox[t]{5cm}{Client-Side Caching \\ Viết báo cáo.} & 100 \\ \hline
+ 24127505      & Trần Hoàng Phúc         & Nhóm trưởng & \parbox[t]{5cm}{Triển khai giao thức RTSP ở phía client và triển khai đóng gói RTP ở phía server. \\ Viết báo cáo.}  & 100 \\ \hline
 \end{tabular}
 \end{table}
+
 
 \section{Thông tin đồ án}
 
@@ -84,16 +86,80 @@
 
 \subsection{Yêu cầu kỹ thuật}
 
-\subsubsection{PHẦN 1: Triển khai RTSP Client (4 điểm)}
+\subsubsection{PHẦN 1: Implement the RTSP protocol in the client and implement the RTP packetization in the server (4 điểm)}
+\paragraph{PHẦN 1: Triển khai Client}
 
+\paragraph{A. Các Module}
 \begin{itemize}
-    \item Triển khai 4 lệnh RTSP: SETUP, PLAY, PAUSE, TEARDOWN
-    \item Quản lý state machine: INIT → READY → PLAYING
-    \item Xử lý CSeq (sequence number) và Session ID
-    \item Tạo UDP socket để nhận RTP packets
+    \item \textbf{ClientLauncher}: Khởi động giao diện người dùng (không cần sửa).
+    \item \textbf{Client}: Xử lý logic RTSP (cần hoàn thiện).
 \end{itemize}
 
-\textbf{Format RTSP Request:}
+\paragraph{B. Triển Khai RTSP Commands}
+\subparagraph{1. Lệnh SETUP} \mbox{}\\
+\textbf{Mục đích:} Thiết lập phiên làm việc và tham số truyền tải.
+\newline
+\textbf{Công việc cần làm:}
+\begin{itemize}
+    \item Tạo UDP socket để nhận dữ liệu RTP từ Server.
+    \item Thiết lập timeout cho socket bằng 0.5 giây.
+    \item Gửi RTSP request đến Server với các header:
+    \begin{itemize}
+        \item \texttt{CSeq}: Số thứ tự lệnh (bắt đầu từ 1).
+        \item \texttt{Transport}: \texttt{RTP/UDP; client\_port=<RTP\_port>}.
+    \end{itemize}
+    \item Nhận response từ server.
+    \item Parse \texttt{Session ID} từ header response để sử dụng cho các lệnh tiếp theo.
+\end{itemize}
+
+\subparagraph{2. Lệnh PLAY}\mbox{}\\
+\textbf{Mục đích:} Bắt đầu phát video.
+\newline
+\textbf{Công việc cần làm:}
+\begin{itemize}
+    \item Gửi request \texttt{PLAY} với các header:
+    \begin{itemize}
+        \item \texttt{CSeq}: Tăng lên 1 so với lệnh trước.
+        \item \texttt{Session}: Session ID nhận được từ lệnh \texttt{SETUP}.
+        \item \textbf{Không} có header \texttt{Transport}.
+    \end{itemize}
+    \item Nhận và xử lý response từ server.
+    \item Cập nhật trạng thái client sang \texttt{PLAYING}.
+\end{itemize}
+
+\subparagraph{3. Lệnh PAUSE}\mbox{}\\
+\textbf{Mục đích:} Tạm dừng phát video.
+\newline
+\textbf{Công việc cần làm:}
+\begin{itemize}
+    \item Gửi request \texttt{PAUSE} với các header:
+    \begin{itemize}
+        \item \texttt{CSeq}: Tăng lên 1.
+        \item \texttt{Session}: Session ID.
+        \item \textbf{Không} có header \texttt{Transport}.
+    \end{itemize}
+    \item Nhận response từ server.
+    \item Cập nhật trạng thái client sang \texttt{READY}.
+\end{itemize}
+
+\subparagraph{4. Lệnh TEARDOWN}\mbox{}\\
+\textbf{Mục đích:} Kết thúc phiên và đóng kết nối.
+\newline
+\textbf{Công việc cần làm:}
+\begin{itemize}
+    \item Gửi request \texttt{TEARDOWN} với các header:
+    \begin{itemize}
+        \item \texttt{CSeq}: Tăng lên 1.
+        \item \texttt{Session}: Session ID.
+        \item \textbf{Không} có header \texttt{Transport}.
+    \end{itemize}
+    \item Nhận response từ server.
+    \item Đóng socket và cập nhật trạng thái client về \texttt{INIT}.
+\end{itemize}
+
+\paragraph{C. Định dạng RTSP Message}
+
+\paragraph{Request Format}
 \begin{verbatim}
 <METHOD> <video_file> RTSP/1.0
 CSeq: <sequence_number>
@@ -101,34 +167,38 @@ CSeq: <sequence_number>
 [Transport: RTP/UDP; client_port=<port>]
 \end{verbatim}
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    state/.style={rectangle, draw, minimum width=2cm, minimum height=1cm, align=center},
-    arrow/.style={->, thick}
-]
-    \node[state] (init1) {INIT};
-    \node[state, below=2cm of init1] (ready) {READY};
-    \node[state, below=2cm of ready] (playing) {PLAYING};
-    \node[state, below=2cm of playing] (init2) {INIT};
-    
-    \draw[arrow] (init1) -- node[right] {SETUP} (ready);
-    \draw[arrow] (ready) -- node[right] {PLAY} (playing);
-    \draw[arrow] (playing) to[bend left=45] node[left] {PAUSE} (ready);
-    \draw[arrow] (ready) to[bend left=45] node[right] {} (playing);
-    \draw[arrow] (playing) -- node[right] {TEARDOWN} (init2);
-\end{tikzpicture}
-\caption{RTSP Client State Machine}
+\paragraph{Response Format}
+\begin{verbatim}
+RTSP/1.0 <status_code> <status_message>
+CSeq: <sequence_number>
+Session: <session_id>
+\end{verbatim}
+
+\paragraph{Mã trạng thái}
+\begin{itemize}
+    \item \textbf{200}: Thành công.
+    \item \textbf{404}: File không tìm thấy.
+    \item \textbf{500}: Lỗi kết nối.
+\end{itemize}
+
+\begin{figure}[h]  
+    \centering      
+    \includegraphics[width=1\textwidth]{setup.png} 
+    \caption{Các trạng thái RTSP Client}
+    \label{fig:example}
 \end{figure}
 
-\subsubsection{PHẦN 2: Triển khai RTP Server}
+\paragraph{PHẦN 2: Triển khai RTP Server}
+\paragraph{A. Các Module}
 
 \begin{itemize}
-    \item Hoàn thiện phương thức \texttt{encode()} trong class \texttt{RtpPacket}
-    \item Đóng gói video frame vào RTP packet (Header 12 bytes + Payload)
-    \item Thiết lập các trường: V=2, PT=26 (MJPEG), Sequence Number, Timestamp, SSRC
-    \item Gửi packet qua UDP mỗi 50ms (20 FPS)
+    \item \textbf{Server}: Lắng nghe kết nối RTSP (không cần sửa)
+    \item \textbf{ServerWorker}: Xử lý RTSP requests (không cần sửa)
+    \item \textbf{VideoStream}: Đọc dữ liệu video từ file (không cần sửa)
+    \item \textbf{RtpPacket}: Đóng gói RTP (cần hoàn thiện hàm \texttt{encode})
 \end{itemize}
+
+\vspace{0.1cm}
 
 \textbf{RTP Header Format (12 bytes):}
 \begin{verbatim}
@@ -143,7 +213,36 @@ CSeq: <sequence_number>
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 \end{verbatim}
 
-\subsubsection{PHẦN 3: HD Video Streaming (3 điểm)}
+\vspace{0.1cm}
+
+\textbf{Thiết Lập Các Trường Header} \\   
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Byte} & \textbf{Bit} & \textbf{Trường và Giá trị} \\
+\hline
+0 & 0-1 & V (Version) = 2 (bắt buộc) \\
+  & 2   & P (Padding) = 0 \\
+  & 3   & X (Extension) = 0 \\
+  & 4-7 & CC (Contributing sources count) = 0 \\
+\hline
+1 & 8   & M (Marker) = 0 \\
+  & 9-15 & PT (Payload Type) = 26 (MJPEG) \\
+\hline
+2-3 & 16-31 & Sequence Number (16 bits): Số thứ tự frame (frameNbr) \\
+\hline
+4-7 & 32-63 & Timestamp (32 bits): Thời gian hiện tại \\
+\hline
+8-11 & 64-95 & SSRC (32 bits): Source identifier \\
+\hline
+\end{tabular}
+
+\begin{figure}[H]  
+    \centering      
+    \includegraphics[width=1.1\textwidth]{server_flow.png} 
+    \caption{Các trạng thái RTSP Client}
+\end{figure}
+
+\subsubsection{PHẦN 2: HD Video Streaming (3 điểm)}
 
 \begin{itemize}
     \item \textbf{Frame Fragmentation:} Chia frame HD (>100KB) thành packets $\leq$ 1450 bytes
@@ -152,7 +251,7 @@ CSeq: <sequence_number>
     \item Hỗ trợ video 720p/1080p với MJPEG format chuẩn (delimiters 0xFF 0xD8/0xFF 0xD9)
 \end{itemize}
 
-\subsubsection{PHẦN 4: Client-Side Caching (2.5 điểm)}
+\subsubsection{PHẦN 3: Client-Side Caching (2.5 điểm)}
 
 \begin{itemize}
     \item \textbf{Pre-buffering:} Buffer N frames (30-100) trước khi cho phép PLAY
@@ -160,5 +259,27 @@ CSeq: <sequence_number>
     \item \textbf{Smooth Playback:} Giảm jitter, hiển thị buffer status trên GUI
     \item Cải thiện trải nghiệm khi network không ổn định
 \end{itemize}
+
+\subsection{Tệp và chạy chương trình}
+
+\textbf{Server:}
+\begin{verbatim}
+python Server.py <server_port>
+Ví dụ: python Server.py 8554
+\end{verbatim}
+
+\textbf{Client:}
+\begin{verbatim}
+python ClientLauncher.py <server_host> <server_port> <RTP_port> <video_file>
+Ví dụ: python ClientLauncher.py localhost 8554 5006 movie.Mjpeg
+\end{verbatim}
+
+\textbf{Thao tác trên Client:}
+\begin{enumerate}
+        \item Nhấn \textbf{SETUP} → Thiết lập kết nối
+        \item Nhấn \textbf{PLAY} → Bắt đầu phát video
+        \item Nhấn \textbf{PAUSE} → Tạm dừng (có thể PLAY lại)
+        \item Nhấn \textbf{TEARDOWN} → Kết thúc
+\end{enumerate}
 
 \clearpage

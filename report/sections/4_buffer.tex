@@ -1,859 +1,218 @@
-% ===================================================================
+%===================================================================
 % PHẦN NÀY DO: Nguyễn Khánh Linh phụ trách
-% Nội dung: Client-Side Buffer Implementation (2.5 điểm)
-% ===================================================================
+% Nội dung: Client-Side Caching (Frame Buffer) + Pre-buffer N frames
+%===================================================================
 
-\section{Client-Side Buffer và Pre-Buffering (2.5 điểm)}
+\section{Client-Side Caching và Pre-buffering}
 
-\subsection{Vấn đề Jitter và Network Variation}
+\subsection{Mục tiêu và vấn đề cần giải quyết}
+Trong truyền video bằng RTP/UDP, các gói tin được gửi liên tục nhưng \textbf{không đảm bảo đến đều theo thời gian}. Nguyên nhân là do \textit{network jitter} — tức là \textbf{sự dao động độ trễ} của các gói khi đi qua mạng. Nói đơn giản, có gói đến sớm hơn dự kiến, có gói đến muộn hơn dự kiến, làm cho \textbf{khoảng thời gian giữa các lần nhận packet không ổn định}. Jitter thường xuất hiện do hiện tượng xếp hàng tại router/switch (queueing), tải mạng thay đổi, hoặc môi trường Wi-Fi nhiễu.
 
-\subsubsection{Network Jitter}
-
-\textbf{Jitter} là sự biến động về độ trễ giữa các packets khi truyền qua mạng.
-
-\begin{table}[H]
-\centering
-\begin{tabular}{|l|c|c|c|}
-\hline
-\textbf{Packet} & \textbf{Sent Time} & \textbf{Received Time} & \textbf{Delay} \\
-\hline
-Frame 1 & 0 ms & 50 ms & 50 ms \\
-Frame 2 & 40 ms & 120 ms & 80 ms \\
-Frame 3 & 80 ms & 140 ms & 60 ms \\
-Frame 4 & 120 ms & 250 ms & 130 ms \\
-\hline
-\end{tabular}
-\caption{Network Jitter Example}
-\end{table}
-
-\textbf{Hậu quả khi không có buffer:}
+Nếu client \textbf{hiển thị frame ngay khi nhận được} (nhận đến đâu phát đến đó), thì chỉ cần một số gói đến muộn hoặc đến không đều sẽ dẫn đến:
 \begin{itemize}
-    \item Video playback bị giật lag (stuttering)
-    \item Frame rate không đều
-    \item Trải nghiệm người dùng kém
+    \item Video bị \textbf{giật/khựng (stuttering)} vì thiếu frame đúng thời điểm cần phát.
+    \item \textbf{FPS không đều}: lúc thì frame đến dồn dập, lúc thì bị trễ, khiến tốc độ phát không ổn định.
+    \item Khi gặp trễ kéo dài ngắn hạn (burst delay), client có thể \textbf{bị đứng hình} do không còn dữ liệu để phát.
 \end{itemize}
 
-\subsubsection{Buffer Solution}
+\textbf{Mục tiêu:} triển khai \textbf{client-side caching} bằng bộ đệm khung hình và \textbf{pre-buffer N frames} để hấp thụ jitter ngắn hạn, giúp video phát mượt hơn và duy trì FPS ổn định gần với FPS mục tiêu (TARGET_FPS = 50).
 
-Pre-buffering giải quyết jitter bằng cách:
-\begin{enumerate}
-    \item Tích lũy frames trong buffer trước khi phát
-    \item Phát frames theo tốc độ cố định (constant frame rate)
-    \item Absorb network variations bằng buffer depth
-\end{enumerate}
 
-\subsection{Buffer Architecture}
+\subsection{Ý tưởng giải pháp}
+Giải pháp của nhóm tập trung đúng vào hai yêu cầu chính của bài: \textbf{client-side caching} và \textbf{pre-buffer N frames}. Thay vì hiển thị (render) ngay lập tức khi nhận được dữ liệu từ mạng, client sẽ đệm dữ liệu vào bộ nhớ tạm để triệt tiêu ảnh hưởng của jitter và đảm bảo tốc độ phát ổn định.
 
-\subsubsection{Deque-Based Design}
-
-Hệ thống sử dụng \texttt{deque} (double-ended queue) từ module \texttt{collections} để khởi tạo buffer phía client xử lý jitter và pre-buffering:
-
-\begin{lstlisting}[language=Python, caption={Buffer Initialization}]
-from collections import deque
-import threading
-
-class Client:
-    def __init__(self, master, serveraddr, serverport, rtpport, filename):
-        # ... other initializations ...
-        
-        # BUFFER COMPONENTS
-        self.frame_buffer = deque(maxlen=200)
-        self.buffer_target = 50
-        self.buffering = False
-        self.buffer_lock = threading.Lock()
-        
-        # Playback control
-        self.playback_thread = None
-        self.playback_active = False
-        self.end_of_stream = False
-\end{lstlisting}
-
-\paragraph{Giải thích từng thành phần:} \\
-
-\textbf{1. Import deque:}
 \begin{itemize}
-    \item \texttt{deque} = double-ended queue (hàng đợi 2 đầu)
-    \item Dùng làm buffer chứa frames video
-    \item Ưu điểm: \texttt{append()} và \texttt{popleft()} đều O(1), phù hợp cho:
-    \begin{itemize}
-        \item Thread nhận RTP: \texttt{append()} frame vào cuối
-        \item Thread phát video: \texttt{popleft()} frame ở đầu ra
-    \end{itemize}
+    \item \textbf{Client-Side Caching:} Client \textbf{không phát ngay} khi vừa nhận được các gói RTP. Thay vào đó, client sẽ \textbf{chờ ghép đủ dữ liệu thành một frame hoàn chỉnh}. Khi frame hoàn tất (nhận biết bằng \texttt{marker=1}), client gom dữ liệu của frame lại và lưu vào \texttt{frame buffer} (kèm vài thông tin như số frame, timestamp, kích thước,\ldots). 
+    Nhờ cách này, việc \textbf{nhận dữ liệu từ mạng} và việc \textbf{hiển thị video} được tách riêng: mạng có thể lúc nhanh lúc chậm, nhưng video vẫn có thể phát ổn định hơn vì đã có buffer ``đỡ'' ở giữa.
+
+    \item \textbf{Pre-buffer N frames:} Trước khi bắt đầu phát, client cần \textbf{tích lũy trước ít nhất N frame} trong \texttt{frame buffer} (tham số \texttt{buffer\_target = 50}). 
+    Nếu số frame trong buffer còn nhỏ hơn $N$ thì client ở trạng thái \textit{BUFFERING} và tiếp tục chờ nhận thêm dữ liệu. Khi buffer đã đủ ($|Q|\ge N$), client chuyển sang \textit{PLAYING} và bắt đầu lấy frame ra phát đều theo FPS mục tiêu. 
+    Cơ chế này giúp giảm hiện tượng \textbf{giật/khựng ở những giây đầu}, và nếu đang phát mà buffer bị cạn (underrun) thì client có thể \textbf{tạm dừng để nạp lại} rồi phát tiếp thay vì đứng hình liên tục.
 \end{itemize}
 
-\textbf{2. Buffer Components:}
+
+
+\newpage
+\subsection{Kiến trúc Producer--Buffer--Consumer}
+Để chống jitter hiệu quả, hệ thống không xử lý ``nhận đến đâu phát đến đó'' nữa, mà tách rõ thành \textbf{2 luồng chạy song song} và một \textbf{vùng đệm ở giữa}. Có thể hiểu đơn giản: một luồng \textit{chuyên đi lấy dữ liệu về}, một luồng \textit{chuyên phát video}, còn bộ đệm đóng vai trò như ``kho chứa tạm'' để làm cho việc phát ổn định hơn.
 \begin{itemize}
-    \item \texttt{frame\_buffer = deque(maxlen=200)}:
-    \begin{itemize}
-        \item Tạo deque làm buffer chứa frames
-        \item \texttt{maxlen=200}: Tối đa 200 frames (tăng từ 100)
-        \item Khi đầy, thêm frame mới $\rightarrow$ frame cũ nhất tự động bị pop (circular buffer)
-        \item Với 50 FPS: 200 frames $\approx$ 4 giây video được đệm
-    \end{itemize}
-    
-    \item \texttt{buffer\_target = 50}:
-    \begin{itemize}
-        \item Mục tiêu pre-buffer: phải có ít nhất 50 frames mới bắt đầu phát (tăng từ 20)
-        \item 50 frames $\approx$ 1 giây (với 50 FPS)
-        \item Giúp ổn định FPS từ đầu và hấp thụ jitter mạng hiệu quả hơn
-    \end{itemize}
-    
-    \item \texttt{buffering = False}:
-    \begin{itemize}
-        \item Cờ trạng thái buffering
-        \item \texttt{True}: Đang tích lũy frames (chưa play hoặc đang re-buffer)
-        \item \texttt{False}: Buffer đã đủ, đang play bình thường
-    \end{itemize}
-    
-    \item \texttt{buffer\_lock = threading.Lock()}:
-    \begin{itemize}
-        \item Mutex lock để đồng bộ hóa truy cập buffer
-        \item Cần thiết vì có 2 threads cùng truy cập buffer:
-        \begin{itemize}
-            \item Thread nhận RTP: \texttt{append()} frames
-            \item Thread playback: \texttt{popleft()} frames
-        \end{itemize}
-        \item Tránh race condition, đảm bảo thread-safe
-    \end{itemize}
+    \item \textbf{Reception thread (Producer):} Luồng này luôn lắng nghe trên socket RTP để nhận các gói tin từ server. Do một frame có thể bị chia thành nhiều gói nhỏ (fragment), reception thread sẽ \textbf{ghép các mảnh lại} cho đến khi tạo thành \textbf{một frame hoàn chỉnh}. Khi ghép xong, luồng này \textbf{không hiển thị ngay} mà sẽ đưa frame vào bộ đệm. Có thể xem đây là ``người sản xuất'' liên tục tạo ra frame và nạp vào kho.
+    \item \textbf{Frame Buffer (Deque):} Đây là \textbf{hàng đợi các frame hoàn chỉnh} nằm giữa 2 luồng. Buffer dùng cấu trúc \texttt{deque} vì thêm vào cuối và lấy ra đầu đều nhanh. Buffer được đặt \textbf{giới hạn dung lượng} (\texttt{maxlen = 200}) để tránh trường hợp mạng quá nhanh hoặc phát quá chậm làm bộ nhớ tăng mãi và gây tràn RAM. Nói đơn giản, buffer giống như một ``bình chứa'' để giữ sẵn một lượng frame dự phòng, giúp video không bị giật khi mạng chập chờn trong thời gian ngắn.
+    \item \textbf{Playback thread (Consumer):} Luồng này chịu trách nhiệm \textbf{lấy frame từ buffer ra phát} theo nhịp cố định (FPS mục tiêu). Nghĩa là dù mạng nhận lúc nhanh lúc chậm, playback thread vẫn cố gắng hiển thị đều đặn để tạo cảm giác mượt. Nếu buffer còn đủ frame thì video chạy ổn định; nếu buffer cạn (underrun) thì playback thread sẽ tạm chờ để buffer được nạp lại rồi phát tiếp. Có thể xem đây là ``người tiêu thụ'' lấy hàng từ kho ra sử dụng.
 \end{itemize}
+Nhờ kiến trúc này, việc \textbf{nhận dữ liệu theo nhịp mạng} và việc \textbf{phát video theo nhịp FPS} được tách rời, nên jitter sẽ ít ảnh hưởng trực tiếp đến trải nghiệm xem video.
 
-\textbf{3. Playback Control:}
-\begin{itemize}
-    \item \texttt{playback\_thread = None}:
-    \begin{itemize}
-        \item Lưu thread chạy hàm \texttt{playFromBuffer()}
-        \item Ban đầu = \texttt{None}, khi ấn PLAY mới tạo thread
-    \end{itemize}
-    
-    \item \texttt{playback\_active = False}:
-    \begin{itemize}
-        \item Cờ điều khiển vòng lặp phát video
-        \item \texttt{True}: Playback loop tiếp tục lấy frame từ buffer
-        \item \texttt{False}: Dừng vòng lặp, thread kết thúc
-    \end{itemize}
-    
-    \item \texttt{end\_of\_stream = False}:
-    \begin{itemize}
-        \item Đánh dấu đã hết video
-        \item Khi không nhận được frame từ server trong thời gian dài
-        \item Set \texttt{True} để dừng playback và cập nhật GUI "Video ended"
-    \end{itemize}
-\end{itemize}
 
-\textbf{Tóm tắt kiến trúc:}
-\begin{itemize}
-    \item \textbf{Buffer:} \texttt{deque} với capacity 100 frames (4 giây)
-    \item \textbf{Pre-buffering logic:} \texttt{buffer\_target} và \texttt{buffering} flag
-    \item \textbf{Thread synchronization:} \texttt{buffer\_lock} bảo vệ concurrent access
-    \item \textbf{Playback management:} Thread riêng với lifecycle control flags
-\end{itemize}
-
-\subsubsection{Buffer States}
-
-\begin{table}[H]
-\centering
-\begin{tabular}{|l|c|l|}
-\hline
-\textbf{State} & \textbf{Condition} & \textbf{Action} \\
-\hline
-BUFFERING & queue size $<$ threshold & Tích lũy frames \\
-PLAYING & queue size $\geq$ threshold & Phát frames \\
-UNDERRUN & queue empty while playing & Tạm dừng, re-buffer \\
-\hline
-\end{tabular}
-\caption{Buffer States}
-\end{table}
-
-\subsection{Reception Thread}
-
-\subsubsection{listenRtp() với Buffer}
-
-\begin{lstlisting}[language=Python, caption={RTP Reception with Buffering}]
-def listenRtp(self):
-    """Thread nhan RTP packets va luu vao buffer"""
-    self.frame_buffer = bytearray()
-    current_frame_seq = -1
-    
-    while True:
-        try:
-            if self.playEvent.isSet():
-                break
-            
-            data = self.rtpSocket.recv(20480)
-            
-            if data:
-                rtpPacket = RtpPacket()
-                rtpPacket.decode(data)
-                
-                currFrameNbr = rtpPacket.seqNum()
-                marker = rtpPacket.marker()
-                
-                # Reassembly logic (neu co fragmentation)
-                if currFrameNbr != current_frame_seq:
-                    current_frame_seq = currFrameNbr
-                    self.frame_buffer = bytearray()
-                
-                self.frame_buffer += rtpPacket.getPayload()
-                
-                # NEU marker=1: frame hoan thanh
-                if marker == 1:
-                    complete_frame = bytes(self.frame_buffer)
-                    
-                    # Update metrics
-                    self.updateMetrics(rtpPacket, len(complete_frame))
-                    
-                    # LUU VAO BUFFER THAY VI HIEN THI NGAY
-                    frame_info = {
-                        'number': self.frameNbr,
-                        'data': complete_frame,
-                        'timestamp': curr_timestamp,
-                        'size': len(complete_frame)
-                    }
-                    
-                    with self.buffer_lock:
-                        self.frame_buffer.append(frame_info)
-                    
-                    # Kiểm tra buffering progress
-                    if self.buffering:
-                        buffer_size = len(self.frame_buffer)
-                        if buffer_size >= self.buffer_target:
-                            self.buffering = False
-                    
-                    # Reset buffer
-                    self.frame_buffer = bytearray()
-                    current_frame_seq = -1
-                
-        except socket.timeout:
-            continue
-        except Exception as e:
-            if not self.playEvent.isSet():
-                print(f"RTP receive error: {e}")
-            break
-\end{lstlisting}
-
-\textbf{Thay đổi so với triển khai HD:}
-\begin{itemize}
-    \item Thay vì gọi \texttt{writeFrame()} trực tiếp
-    \item Lưu frame vào \texttt{frame\_buffer} (deque) với metadata đầy đủ
-    \item Sử dụng \texttt{buffer\_lock} để thread-safe
-    \item Kiểm tra buffering progress trong reception thread
-    \item Separate reception từ playback hoàn toàn
-\end{itemize}
-
-\subsection{Playback Thread}
-
-\subsubsection{playFromBuffer()}
-
-\begin{lstlisting}[language=Python, caption={Playback Thread with Buffer Management (50 FPS)}]
-def playFromBuffer(self):
-    """Playback thread - lay frames tu buffer va hien thi"""
-    TARGET_FPS = 50  # Tang tu 25 FPS
-    FRAME_DURATION = 1.0 / TARGET_FPS  # 0.02 seconds
-    empty_buffer_count = 0
-    
-    print("Starting playback from buffer...")
-    
-    while self.playback_active:
-        try:
-            frame_start = time.time()
-            
-            # Lay frame tu buffer voi lock
-            with self.buffer_lock:
-                if len(self.frame_buffer) == 0:
-                    empty_buffer_count += 1
-                    
-                    # Neu buffer trong qua lau (5 giay) -> Co the het video
-                    if empty_buffer_count > 50:  # 50 * 0.1s = 5 seconds
-                        self.end_of_stream = True
-                        self.updateStatus("✓ Video ended")
-                        print("\n🎬 VIDEO ENDED - No more frames")
-                        self.playback_active = False
-                        break
-                    
-                    # Buffer empty - doi them
-                    self.updateStatus("⚠ Buffer underrun - waiting...")
-                
-                empty_buffer_count = 0  # Reset counter
-                frame_info = self.frame_buffer.popleft()
-            
-            # Hien thi frame
-            try:
-                cache_file = self.writeFrame(frame_info['data'])
-                self.updateMovie(cache_file)
-                
-                # Update buffer status
-                buffer_level = len(self.frame_buffer)
-                if buffer_level < 10:
-                    self.updateStatus(f"⚠ Buffer low: {buffer_level}")
-                # Buffer underrun: quay lai che do buffering
-                print("Buffer underrun! Re-buffering...")
-                self.buffering = True
-                self.updateBufferStatus("Buffering...")
-        
-        except Exception as e:
-            print(f"Playback error: {e}")
-            break
-    
-    print("Playback thread stopped")
-\end{lstlisting}
-
-\textbf{Playback algorithm:}
-\begin{enumerate}
-    \item Kiểm tra buffer với \texttt{buffer\_lock}
-    \item Nếu buffer empty:
-    \begin{itemize}
-        \item Tăng \texttt{empty\_buffer\_count}
-        \item Nếu empty > 5 giây → End of stream
-        \item Ngược lại → Đợi frames mới
-    \end{itemize}
-    \item Nếu có frame:
-    \begin{itemize}
-        \item \texttt{popleft()} frame từ deque (O(1))
-        \item Display frame với \texttt{writeFrame()}
-        \item Update buffer status (low/healthy)
-        \item Sleep chính xác để duy trì 25 FPS
-    \end{itemize}
-\end{enumerate}
-
-\subsubsection{Buffer Underrun Handling}
-
-\begin{lstlisting}[language=Python, caption={Underrun Detection and Recovery}]
-with self.buffer_lock:
-    if len(self.frame_buffer) == 0:
-        empty_buffer_count += 1
-        
-                elif buffer_level > 50:
-                    self.updateStatus(f"✓ Buffer healthy: {buffer_level}")
-                else:
-                    self.updateStatus(f"▶ Playing - Buffer: {buffer_level}")
-                    
-            except Exception as e:
-                print(f"Frame display error: {e}")
-            
-            # Frame rate control - sleep cho du 0.04s
-            frame_elapsed = time.time() - frame_start
-            sleep_time = max(0, FRAME_DURATION - frame_elapsed)
-            if sleep_time > 0:
-                time.sleep(sleep_time)
-                
-        except Exception as e:
-            print(f"Playback error: {e}")
-            break
-    
-    print("Playback thread stopped")
-\end{lstlisting}            break
-        
-        # Buffer underrun - doi them
-        self.updateStatus("⚠ Buffer underrun - waiting...")
-        time.sleep(0.1)
-        continue
-\end{lstlisting}
-
-\textbf{Recovery process:}
-\begin{enumerate}
-    \item Detect buffer empty với \texttt{len(frame\_buffer) == 0}
-    \item Tăng counter \texttt{empty\_buffer\_count}
-    \item Nếu empty < 5s: đợi và tiếp tục (buffer underrun tạm thời)
-    \item Nếu empty > 5s: kết luận end of stream
-    \item Hiển thị thông báo "Video ended" cho user
-    \item Dừng playback thread
-\end{enumerate}
-
-\subsection{Server-Side Pre-buffering Optimization}
-
-\subsubsection{Fast Initial Buffer Fill}
-
-Để đảm bảo FPS ổn định ngay từ đầu, server gửi pre-buffer với tốc độ cao hơn:
-
-\begin{lstlisting}[language=Python, caption={Server Pre-buffering Strategy}]
-def prebufferFrames(self):
-    """Gui frames de client buffer truoc khi PLAY"""
-    PREBUFFER_COUNT = 60  # Tang tu 30 len 60 frames
-    
-    print(f"Pre-buffering {PREBUFFER_COUNT} frames...")
-    
-    for i in range(PREBUFFER_COUNT):
-        if self.clientInfo['prebuffer_event'].isSet():
-            print("PLAY received, stopping pre-buffer")
-            return
-        
-        data = self.clientInfo['videoStream'].nextFrame()
-        if not data:
-            break
-        
-        frameNumber = self.clientInfo['videoStream'].frameNbr()
-        address = self.clientInfo['rtspSocket'][1][0]
-        port = int(self.clientInfo['rtpPort'])
-        
-        self.splitAndSendFrame(data, frameNumber, address, port)
-        
-        # Gui nhanh de fill buffer nhanh (0.01s = 100 FPS tam thoi)
-        time.sleep(0.01)  # Tang tu 0.02 (50 FPS)
-    
-    print(f"Pre-buffering complete: {i+1} frames sent")
-\end{lstlisting}
-
-\textbf{Pre-buffering strategy:}
-\begin{itemize}
-    \item \textbf{PREBUFFER\_COUNT = 60}: Gửi 60 frames (tương ứng buffer\_target 50 + dự phòng)
-    \item \textbf{Fast sending rate}: 100 FPS (0.01s) thay vì 50 FPS bình thường
-    \item \textbf{Time to fill}: 60 frames × 0.01s = 0.6 giây
-    \item \textbf{Kết quả}: Client có đủ buffer ngay khi nhấn PLAY, FPS ổn định từ đầu
-\end{itemize}
-
-\subsubsection{Normal Streaming Rate}
-
-Sau pre-buffer, server chuyển về tốc độ bình thường:
-
-\begin{lstlisting}[language=Python, caption={Normal Streaming Loop}]
-def sendRtp(self):
-    while True:
-        frame_start = time.time()
-        
-        # Get and send frame
-        data = self.clientInfo['videoStream'].nextFrame()
-        if not data:
-            break
-        
-        frameNumber = self.clientInfo['videoStream'].frameNbr()
-        self.splitAndSendFrame(data, frameNumber, address, port)
-        
-        # Normal frame rate: 50 FPS
-        frame_elapsed = time.time() - frame_start
-        time.sleep(max(0, 0.02 - frame_elapsed))
-\end{lstlisting}
-
-\textbf{Two-phase sending strategy:}
-\begin{enumerate}
-    \item \textbf{Phase 1 - Pre-buffering}: 100 FPS (0.6s) để fill buffer nhanh
-    \item \textbf{Phase 2 - Normal streaming}: 50 FPS để maintain playback
-    \item \textbf{Benefit}: Loại bỏ "chậm lúc đầu", FPS ổn định ngay từ frame đầu tiên
-\end{enumerate}
-
-\subsection{GUI Integration}
-
-\subsubsection{Buffer Status Display}
-
-\begin{lstlisting}[language=Python, caption={Buffer Status UI}]
-def setupGUI(self):
-    """Thiet lap GUI voi buffer status"""
-    # ... other GUI elements ...
-    
-    # Buffer status label
-    self.bufferLabel = Label(self.master, height=2)
-    self.bufferLabel.grid(row=3, column=0, columnspan=4, sticky=W+E+N+S)
-    
-    self.updateBufferStatus("Ready")
-
-def updateBufferStatus(self, status):
-    """Cap nhat buffer status tren GUI"""
-    if hasattr(self, 'bufferLabel'):
-        self.bufferLabel.config(text=f"Buffer Status: {status}")
-\end{lstlisting}
-
-\textbf{Status messages:}
-\begin{itemize}
-    \item "Buffering: 5/10 (50\%)" - Đang pre-buffer
-    \item "Playing (Buffer: 15)" - Đang phát, 15 frames trong buffer
-    \item "Buffering..." - Re-buffering sau underrun
-\end{itemize}
-
-\subsection{Playback Control}
-
-\subsubsection{Start/Stop Playback}
-
-\begin{lstlisting}[language=Python, caption={Playback Control Methods}]
-def startPlayback(self):
-    """Khoi dong playback thread"""
-    if not self.playback_active:
-        self.playback_active = True
-        self.end_of_stream = False
-        
-        self.playback_thread = threading.Thread(
-            target=self.playFromBuffer,
-            daemon=True
-        )
-        self.playback_thread.start()
-        print("Playback thread started")
-
-def stopPlayback(self):
-    """Dung playback thread"""
-    self.playback_active = False
-    
-    if self.playback_thread:
-        self.playback_thread.join(timeout=2.0)
-        self.playback_thread = None
-    
-    # Clear buffer voi lock
-    with self.buffer_lock:
-        self.frame_buffer.clear()
-    
-    print("Playback stopped, buffer cleared")
-\end{lstlisting}
-
-\subsubsection{Integration với RTSP Controls}
-
-\begin{lstlisting}[language=Python, caption={RTSP Button Handlers với Buffer}]
-def setupButton(self):
-    """SETUP button - khoi tao buffer"""
-    self.sendRtspRequest(self.SETUP)
-    # Buffer se duoc khoi tao trong __init__
-
-def playMovie(self):
-    """PLAY button - bat dau playback"""
-    if self.state == self.READY:
-        # Gui RTSP PLAY request
-        self.sendRtspRequest(self.PLAY)
-        
-        # Bat dau playback thread
-        self.startPlayback()
-
-def pauseMovie(self):
-    """PAUSE button - tam dung playback"""
-    if self.state == self.PLAYING:
-        # Gui RTSP PAUSE request
-        self.sendRtspRequest(self.PAUSE)
-        
-        # Dung playback (nhung giu buffer)
-        self.playback_active = False
-
-def exitClient(self):
-    """TEARDOWN button - cleanup"""
-    # Dung playback
-    self.stopPlayback()
-    
-    # Gui RTSP TEARDOWN
-    self.sendRtspRequest(self.TEARDOWN)
-    
-    # Dong cac socket
-    # ...
-\end{lstlisting}
-
-\subsection{Advanced Buffer Strategies}
-
-\subsubsection{Adaptive Buffer Threshold}
-
-\begin{lstlisting}[language=Python, caption={Adaptive Buffering}]
-class AdaptiveBuffer:
-    def __init__(self):
-        self.min_buffer = 5
-        self.max_buffer = 20
-        self.current_threshold = 10
-        
-        # Network quality metrics
-        self.jitter_history = []
-        self.loss_rate = 0
-    
-    def adjustThreshold(self, jitter, loss_rate):
-        """Dieu chinh buffer threshold theo network quality"""
-        self.jitter_history.append(jitter)
-        if len(self.jitter_history) > 10:
-            self.jitter_history.pop(0)
-        
-        avg_jitter = sum(self.jitter_history) / len(self.jitter_history)
-        
-        # Tang buffer neu network kem
-        if avg_jitter > 100 or loss_rate > 5:
-            self.current_threshold = min(self.max_buffer, 
-                                        self.current_threshold + 2)
-            print(f"Increased buffer to {self.current_threshold}")
-        
-        # Giam buffer neu network tot
-        elif avg_jitter < 50 and loss_rate < 1:
-            self.current_threshold = max(self.min_buffer, 
-                                        self.current_threshold - 1)
-            print(f"Decreased buffer to {self.current_threshold}")
-        
-        return self.current_threshold
-\end{lstlisting}
-
-\textbf{Adaptive strategy:}
-\begin{itemize}
-    \item Theo dõi jitter và packet loss
-    \item Tăng buffer khi network chất lượng kém
-    \item Giảm buffer khi network ổn định (giảm latency)
-    \item Range: 5-20 frames
-\end{itemize}
-
-\subsection{Performance Comparison}
-
-\begin{table}[H]
-\centering
-\begin{tabular}{|l|c|c|}
-\hline
-\textbf{Metric} & \textbf{No Buffer} & \textbf{With Buffer} \\
-\hline
-Initial delay & 0 ms & 800 ms (20 frames) \\
-Buffer capacity & 0 & 100 frames (4 seconds) \\
-Stuttering events & 15-20/min & 0-1/min \\
-Smooth playback & 60\% & 98\% \\
-Jitter tolerance & Low & Very High \\
-End detection & Poor & Accurate (5s timeout) \\
-User experience & Poor & Excellent \\
-\hline
-\end{tabular}
-\caption{Buffer Performance Comparison}
-\end{table}
-
-\subsection{Buffer Monitoring}
-
-\subsubsection{Real-time Statistics}
-
-\begin{lstlisting}[language=Python, caption={Buffer Statistics}]
-def getBufferStats(self):
-    """Thu thap thong ke buffer"""
-    return {
-        'queue_size': self.frame_queue.qsize(),
-        'threshold': self.BUFFER_SIZE,
-        'buffering': self.buffering,
-        'underruns': self.underrun_count,
-        'avg_buffer_level': self.calculate_avg_buffer()
-    }
-
-def logBufferEvent(self, event_type):
-    """Ghi lai cac buffer events"""
-    timestamp = time.time() - self.startTime
-    
-    events = {
-        'underrun': f"[{timestamp:.2f}s] Buffer underrun",
-        'filled': f"[{timestamp:.2f}s] Buffer filled",
-        'playing': f"[{timestamp:.2f}s] Playback started"
-    }
-    
-    print(events.get(event_type, "Unknown event"))
-\end{lstlisting}
-
-\subsection{Buffer Size và Packet Loss Resilience}
-
-\subsubsection{Mối quan hệ giữa Buffer và Packet Loss}
-
-\textbf{Quan niệm sai lầm:}
-\begin{itemize}
-    \item ❌ "Tăng \texttt{maxlen} của deque sẽ giảm packet loss"
-    \item ❌ "Dùng unbounded deque (không giới hạn) → loss = 0\%"
-    \item ❌ "Buffer lớn = ít mất gói hơn"
-\end{itemize}
-
-\textbf{Sự thật:}
-
-Buffer ở \textbf{tầng ứng dụng} KHÔNG ảnh hưởng đến packet loss ở \textbf{tầng mạng}.
+% Preamble:
+% \usepackage{tikz}
+% \usetikzlibrary{positioning,arrows.meta}
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=1.5cm]
-\node[draw, rectangle] (net) {Network (UDP)};
-\node[draw, rectangle, below of=net] (kernel) {Kernel Socket Buffer};
-\node[draw, rectangle, below of=kernel] (app) {Application Buffer (deque)};
+\begin{tikzpicture}[
+    node distance=1.2cm,
+    box/.style={draw, rounded corners, minimum width=6cm, minimum height=0.95cm, align=center},
+    arrow/.style={-{Stealth[length=3mm,width=2mm]}, thick}
+]
+    \node[box] (rtp) {RTP Packets};
+    \node[box, below=of rtp] (recv) {Reception Thread\\(Producer)};
+    \node[box, below=of recv] (buf) {Frame Buffer (deque)\\Bounded Queue};
+    \node[box, below=of buf] (play) {Playback Thread\\(Consumer)};
+    \node[box, below=of play] (disp) {Display / GUI};
 
-\draw[->] (net) -- node[right] {Packets đến} (kernel);
-\draw[->] (kernel) -- node[right] {\texttt{recv()}} (app);
+    \draw[arrow] (rtp) -- (recv);
+    \draw[arrow] (recv) -- (buf);
+    \draw[arrow] (buf) -- (play);
+    \draw[arrow] (play) -- (disp);
 
-\node[right=3cm of net, text width=4cm, align=left] {
-    \textbf{Loss xảy ra:} \\
-    ✗ Network congestion \\
-    ✗ Wi-Fi interference \\
-    ✗ Kernel buffer đầy
-};
+    % Optional side notes (em có thể xóa nếu muốn gọn)
+    \node[right=0.6cm of recv, align=left] (note1) {\footnotesize Receive \& reassemble\\\footnotesize (marker=1)};
+    \node[right=0.6cm of buf, align=left] (note2) {\footnotesize Pre-buffer $N$ frames\\\footnotesize Absorb jitter};
+    \node[right=0.6cm of play, align=left] (note3) {\footnotesize Pop at fixed FPS\\\footnotesize handle underrun};
 
-\node[right=3cm of app, text width=4cm, align=left] {
-    \textbf{Buffer chỉ giúp:} \\
-    ✓ Chống jitter \\
-    ✓ Smooth playback \\
-    ✓ Absorb burst
-};
+    \draw[-, thin] (note1.west) -- ++(-0.3,0);
+    \draw[-, thin] (note2.west) -- ++(-0.3,0);
+    \draw[-, thin] (note3.west) -- ++(-0.3,0);
 \end{tikzpicture}
-\caption{Packet Loss vs Application Buffer}
+\caption{Mô hình Producer--Buffer--Consumer chống jitter}
+\label{fig:producer-buffer-consumer}
 \end{figure}
 
-\subsubsection{Bounded vs Unbounded Deque}
 
-\textbf{Bounded deque (\texttt{maxlen=100}):}
-\begin{lstlisting}[language=Python]
-buffer = deque(maxlen=100)
+\subsection{Thiết kế bộ đệm và tham số điều khiển}
+\begin{itemize}
+    \item \textbf{Buffer capacity} (\texttt{maxlen=200}): bộ đệm được cài đặt bằng \texttt{deque} với \texttt{maxlen=200}, nghĩa là tối đa chỉ lưu \textbf{200 frame} trong RAM. Đây là \textit{bounded buffer} để tránh việc buffer phình to vô hạn khi mạng gửi nhanh hoặc client phát chậm, từ đó giảm nguy cơ \textbf{OOM (Out Of Memory)} — tình trạng chương trình bị \textit{hết bộ nhớ RAM} và có thể bị treo hoặc bị hệ điều hành buộc đóng.
+    \item \textbf{Pre-buffer threshold} ($N = \texttt{buffer\_target} = 50$): ngưỡng \textbf{số frame tối thiểu} mà client phải tích lũy trong \texttt{frame\_buffer} trước khi cho phép bắt đầu phát video. Cụ thể, nếu $|Q| < N$ (buffer chưa đủ 50 frame) thì client vẫn ở trạng thái \textit{BUFFERING} và tiếp tục nhận dữ liệu để làm đầy bộ đệm; chỉ khi $|Q|\ge 50$ thì client mới chuyển sang \textit{PLAYING} và playback thread bắt đầu \texttt{popleft()} frame để hiển thị theo FPS mục tiêu. Với \texttt{TARGET\_FPS = 50}, ngưỡng $N=50$ tương đương khoảng $50/50 \approx 1$ giây dữ liệu video được đệm sẵn trước khi phát, giúp giảm hiện tượng giật/khựng ở thời điểm bắt đầu.
+    \item \textbf{Playback rate (FPS):} tốc độ phát \textbf{mục tiêu} mà client cố gắng duy trì khi hiển thị video. Trong code, nhóm đặt \texttt{TARGET\_FPS = 50} nên mỗi frame có thời lượng mong muốn là
+    \[\texttt{FRAME\_DURATION} = \frac{1}{\texttt{TARGET\_FPS}} = \frac{1}{50} \approx 0.02 \text{ giây/frame}.\]Ở mỗi vòng lặp phát, chương trình đo thời gian xử lý thực tế của frame (giải mã, ghi file tạm, cập nhật GUI,\ldots) rồi \textbf{sleep phần thời gian còn lại}:\[\texttt{sleep\_time} = \max(0, \texttt{FRAME\_DURATION} - \texttt{elapsed}),\]nhờ đó playback thread phát frame theo nhịp đều đặn gần 50 FPS (nếu buffer còn đủ dữ liệu). Nếu xử lý một frame mất lâu hơn \texttt{FRAME\_DURATION} thì \texttt{sleep\_time} sẽ bằng 0 và FPS thực tế sẽ giảm xuống tương ứng.
+    \item \textbf{Timeout end-of-stream} ($T_{end}$): cơ chế phát hiện \textbf{hết video} khi đang phát mà \texttt{frame\_buffer} bị rỗng quá lâu. Trong \texttt{playFromBuffer()}, mỗi lần buffer rỗng chương trình sẽ tăng biến đếm \texttt{empty\_buffer\_count} và chờ thêm \texttt{0.1s}. Nếu tình trạng rỗng kéo dài vượt ngưỡng, client kết luận \textbf{end-of-stream} (server đã gửi hết dữ liệu hoặc không còn gói đến), cập nhật trạng thái ``Video ended'' và dừng playback thread.
+    Với cấu hình hiện tại, điều kiện là:
+    \[
+    \texttt{empty\_buffer\_count} > 50 \;\;\Rightarrow\;\; T_{end} \approx 50 \times 0.1 = 5 \text{ giây}.
+    \]
+    Nghĩa là nếu trong khoảng $\sim 5$ giây liên tục không lấy được frame nào từ buffer, client sẽ xem video đã kết thúc.
 
-# Khi day (100 frames):
-buffer.append(new_frame)
-# -> Tu dong DROP frame cu nhat (FIFO)
-# -> Luon giu 100 frames moi nhat
-\end{lstlisting}
+\end{itemize}
 
-\textbf{Unbounded deque (không giới hạn):}
-\begin{lstlisting}[language=Python]
-buffer = deque()  # Khong maxlen
-
-# Khi nhan packets lien tuc:
-buffer.append(frame)  # Tang vo han
-# -> 1 phut: 1500 frames = 150 MB
-# -> 10 phut: 15000 frames = 1.5 GB -> CRASH!
-\end{lstlisting}
-
-\textbf{So sánh Packet Loss:}
+\subsection{Các trạng thái của bộ đệm}
 \begin{table}[H]
 \centering
-\begin{tabular}{|l|c|c|}
+\begin{tabular}{|l|l|l|}
 \hline
-\textbf{Metric} & \textbf{Bounded (maxlen=100)} & \textbf{Unbounded} \\
-\hline
-Network packet loss & 3\% & 3\% \\
-Application frame drops & 0-2\% & 0\% \\
-Memory usage & ~10 MB & Tăng vô hạn \\
-Latency & 4s (ổn định) & Tăng vô hạn \\
-Crash risk & Không & Cao (OOM) \\
-\hline
+\textbf{Trạng thái} & \textbf{Điều kiện} & \textbf{Hành động} \\ \hline
+BUFFERING & $|Q| < N$ & Chờ nhận thêm frame (pre-buffer) \\ \hline
+PLAYING & $|Q| \ge N$ & Pop và phát theo FPS cố định \\ \hline
+UNDERRUN & $|Q|=0$ khi đang PLAYING & Tạm dừng phát, quay lại BUFFERING \\ \hline
+END & $|Q|=0$ quá $T_{end}$ & Dừng playback, báo kết thúc \\ \hline
 \end{tabular}
-\caption{Bounded vs Unbounded Performance}
+\caption{Các trạng thái của bộ đệm}
 \end{table}
 
-\textbf{Kết luận:} Network packet loss GIỐNG NHAU (3\%) vì được đo ở tầng UDP bằng sequence numbers, TRƯỚC KHI vào buffer.
+\subsection{Thuật toán}
+\subsubsection{Thuật toán Reception (Producer) trong \texttt{listenRtp()}}
+\begin{enumerate}
+    \item Nhận một gói RTP từ socket, giải mã các trường: \texttt{seqNum}, \texttt{timestamp}, \texttt{marker}, \texttt{payload}.
+    \item Gọi \texttt{network\_analyzer.record\_packet(...)} để ghi nhận thống kê mạng.
+    \item Nếu đây là gói đầu tiên của một frame mới (\texttt{current\_frame\_ts} chưa được gán), khởi tạo trạng thái ghép frame:
+    đặt \texttt{current\_frame\_ts = timestamp}, \texttt{frame\_corrupted = False}, đồng thời đặt
+    \texttt{expected\_seq = seqNum + 1} (vì gói hiện tại đã được xử lý).
+    \item Nếu \texttt{timestamp} khác \texttt{current\_frame\_ts}:
+    \begin{itemize}
+        \item Nếu \texttt{timestamp} nhỏ hơn \texttt{current\_frame\_ts} (gói đến trễ của frame cũ) thì bỏ qua gói này.
+        \item Nếu \texttt{timestamp} lớn hơn \texttt{current\_frame\_ts} trong khi đang ghép dở frame hiện tại (chưa kết thúc), coi frame hiện tại không còn hợp lệ và reset để bắt đầu ghép frame mới.
+    \end{itemize}
+    \item Kiểm tra thứ tự theo \texttt{expected\_seq}:
+    \begin{itemize}
+        \item Nếu \texttt{seqNum == expected\_seq}: nối \texttt{payload} vào vùng ghép frame và tăng \texttt{expected\_seq} lên 1.
+        \item Nếu \texttt{seqNum > expected\_seq}: phát hiện có mất gói (gap) trong frame $\Rightarrow$
+        đặt \texttt{frame\_corrupted = True}, vẫn nối \texttt{payload} hiện tại và cập nhật \texttt{expected\_seq = seqNum + 1}.
+        \item Nếu \texttt{seqNum < expected\_seq}: gói đến trễ / out-of-order / duplicate $\Rightarrow$ bỏ qua để tránh ghép sai thứ tự.
+    \end{itemize}
+    \item Khi \texttt{marker=1} (kết thúc frame):
+    \begin{itemize}
+        \item Nếu \texttt{frame\_corrupted=True} thì loại bỏ frame này (tránh lỗi JPEG bị hỏng/truncated) và reset trạng thái ghép frame.
+        \item Nếu frame hợp lệ thì đóng gói thành \texttt{frame\_info} và đưa vào \texttt{frame\_buffer} (deque) dưới khóa \texttt{buffer\_lock}, sau đó reset trạng thái để ghép frame kế tiếp.
+    \end{itemize}
+\end{enumerate}
 
-\subsubsection{Tại sao Buffer Size quan trọng?}
 
-Buffer KHÔNG giảm loss nhưng giúp \textbf{chống chịu} loss tốt hơn:
 
-\textbf{Tình huống: Burst packet loss 2 giây}
+\subsubsection{Thuật toán Playback + Pre-buffer (Consumer)}
+\begin{enumerate}
+    \item Nếu $|Q| < N$: hiển thị trạng thái BUFFERING và chờ (pre-buffer).
+    \item Nếu $|Q| \ge N$: lấy 1 frame từ đầu hàng đợi (\texttt{popleft}) và hiển thị.
+    \item Điều chỉnh thời gian ngủ để giữ FPS ổn định.
+    \item Nếu $|Q|=0$ khi đang PLAYING: chuyển UNDERRUN và quay lại BUFFERING.
+    \item Nếu buffer rỗng quá $T_{end}$: kết luận END và dừng phát.
+\end{enumerate}
 
-\begin{table}[H]
-\centering
-\begin{tabular}{|l|c|c|}
-\hline
-\textbf{Buffer Size} & \textbf{Timeline} & \textbf{Kết quả} \\
-\hline
-\texttt{maxlen=20} (0.8s) & 
-\begin{tabular}{@{}c@{}}
-t=0s: Buffer 20 frames \\
-t=1s: Loss burst → 0 frames \\
-t=1s: \textbf{FREEZE} \\
-\end{tabular} & 
-Underrun \\
-\hline
-\texttt{maxlen=100} (4s) & 
-\begin{tabular}{@{}c@{}}
-t=0s: Buffer 100 frames \\
-t=1s: Loss burst → 50 frames \\
-t=1s: Tiếp tục play \\
-\end{tabular} & 
-Smooth \\
-\hline
-\end{tabular}
-\caption{Buffer Resilience Against Loss Bursts}
-\end{table}
+\subsection{Minh họa ngắn bằng code}
+\begin{lstlisting}[language=Python, caption={Khởi tạo buffer và đồng bộ truy cập}]
+from collections import deque
+import threading
 
-\subsubsection{Công thức tính Buffer Size tối ưu}
-
-\begin{equation}
-\texttt{maxlen} = (\text{FPS} \times \text{burst\_duration}) + \text{safety\_margin}
-\end{equation}
-
-\textbf{Ví dụ:}
-\begin{itemize}
-    \item FPS = 25
-    \item Burst loss tối đa quan sát: 3 giây
-    \item Safety margin: 1 giây (25 frames)
-    \item \texttt{maxlen} = (25 × 3) + 25 = \textbf{100 frames} ✓
-\end{itemize}
-
-Nếu loss pattern thay đổi:
-\begin{itemize}
-    \item Burst 5s → \texttt{maxlen} = (25 × 5) + 25 = 150
-    \item Steady loss (không burst) → \texttt{maxlen} = 50-75 (giảm latency)
-\end{itemize}
-
-\subsubsection{Trade-off Analysis}
-
-\begin{table}[H]
-\centering
-\begin{tabular}{|l|c|c|c|}
-\hline
-\textbf{maxlen} & \textbf{Latency} & \textbf{Memory} & \textbf{Burst Resilience} \\
-\hline
-20 & 0.8s & ~2 MB & ❌ Yếu \\
-50 & 2s & ~5 MB & ⚠️ Trung bình \\
-100 & 4s & ~10 MB & ✅ Tốt \\
-200 & 8s & ~20 MB & ✅✅ Rất tốt \\
-500 & 20s & ~50 MB & ⚠️ Quá lớn \\
-Unbounded & Vô hạn & Tràn RAM & ❌ Crash \\
-\hline
-\end{tabular}
-\caption{Buffer Size Trade-offs}
-\end{table}
-
-\textbf{Khuyến nghị:}
-\begin{itemize}
-    \item \textbf{Live streaming:} \texttt{maxlen=50-100} (latency thấp)
-    \item \textbf{VoD streaming:} \texttt{maxlen=100-200} (chống loss tốt)
-    \item \textbf{Network tốt (< 1\% loss):} \texttt{maxlen=50-75}
-    \item \textbf{Network xấu (> 3\% loss):} \texttt{maxlen=150-200}
-\end{itemize}
-
-\subsubsection{Monitoring và Auto-tuning}
-
-Detect buffer underrun để suggest \texttt{maxlen}:
-
-\begin{lstlisting}[language=Python]
-# Trong playFromBuffer():
-if len(self.frame_buffer) == 0:
-    self.underrun_count += 1
-
-# Cuoi session:
-if self.underrun_count > 5 and stats['loss_rate'] > 2:
-    suggested_maxlen = int(self.frame_buffer.maxlen * 1.5)
-    print(f"Tang maxlen len {suggested_maxlen} de chong burst loss")
-elif self.underrun_count == 0:
-    suggested_maxlen = int(self.frame_buffer.maxlen * 0.7)
-    print(f"Co the giam maxlen xuong {suggested_maxlen} de giam latency")
+self.frame_buffer = deque(maxlen=200)   # bounded buffer
+self.buffer_target = 50                 # pre-buffer N frames
+self.buffer_lock = threading.Lock()     # thread-safe
 \end{lstlisting}
 
-\textbf{Tóm tắt quan trọng:}
+\begin{lstlisting}[language=Python, caption={Nguyên tắc producer/consumer}]
+# Producer: khi frame hoan thanh
+with self.buffer_lock:
+    self.frame_buffer.append(frame_info)
+
+# Consumer: khi du buffer_target
+with self.buffer_lock:
+    frame_info = self.frame_buffer.popleft()
+\end{lstlisting}
+
+
+\subsection{Đánh đổi (Trade-off) và kết quả kỳ vọng}
+Để đánh giá hiệu quả của cơ chế client-side caching và pre-buffering,
+nhóm tiến hành chạy thử nghiệm với video HD \texttt{sample\_1920x1080.mjpeg}.
+Server thực hiện pre-buffer 60 frames trước khi phát và đo các chỉ số
+hiệu năng trong quá trình streaming.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Chỉ số (Client)} & \textbf{Giá trị đo được} \\ \hline
+Frame rate trung bình & 48.1 FPS \\ \hline
+Bandwidth trung bình & 27.75 Mbps \\ \hline
+Packet loss & 0.0\% (0 packets) \\ \hline
+Network jitter & 2.88 ms \\ \hline
+Frames nhận được & 319 frames \\ \hline
+Dung lượng video nhận & 31.6 MB \\ \hline
+Quality level & ULTRA (MTU = 1450) \\ \hline
+\end{tabular}
+\caption{Số liệu thực nghiệm phía Client thu thập từ GUI}
+\label{tab:client-gui-stats}
+\end{table}
+
+Hình~\ref{fig:client-gui} minh họa trực quan các chỉ số thống kê phía client
+trong quá trình streaming, được dùng để thu thập số liệu ở Bảng~\ref{tab:client-gui-stats}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{GUI.png}
+    \caption{Giao diện chương trình Client với thống kê mạng và trạng thái buffer}
+    \label{fig:client-gui}
+\end{figure}
+
+
+
 \begin{itemize}
-    \item ❌ Buffer KHÔNG giảm packet loss ở network
-    \item ✅ Buffer giúp CHỐNG CHỊU loss tốt hơn (avoid underrun)
-    \item ✅ \texttt{maxlen} = circuit breaker (tránh memory leak)
-    \item ✅ Tính \texttt{maxlen} dựa trên burst duration, không phải loss rate
-    \item ⚖️ Trade-off: latency vs resilience
+    \item \textbf{Đánh đổi (Trade-off):} cơ chế pre-buffer làm tăng độ trễ ban đầu trước khi phát video vì client cần tích lũy đủ $N$ frame trong bộ đệm. Độ trễ này xấp xỉ $\frac{N}{FPS}$ giây. Với cấu hình đang sử dụng ($N=50$, $FPS=50$), thời gian chờ khởi động (startup delay) vào khoảng $1$ giây. Đây là đánh đổi chấp nhận được để đổi lấy trải nghiệm phát ổn định hơn.
+    
+    \item \textbf{Lợi ích đạt được:} việc tách riêng hai luồng \textit{reception} và \textit{playback} theo mô hình producer--consumer giúp client không phụ thuộc trực tiếp vào nhịp đến không đều của các gói RTP. Khi jitter tăng hoặc có các đợt trễ ngắn hạn, bộ đệm vẫn cung cấp frame liên tục cho playback thread, nhờ đó giảm hiện tượng giật (stuttering), hạn chế tụt FPS tức thời và giữ tốc độ phát gần với FPS mục tiêu.
+    
+    \item \textbf{Kết quả thực nghiệm:} số liệu ghi nhận cho thấy phía server duy trì hiệu năng streaming tương đối ổn định với trung bình $46.9$ FPS và bitrate khoảng $37.48$ Mbps, đủ để cấp dữ liệu cho phía client. Ở phía client (thông qua thống kê trên GUI), jitter trung bình khoảng $2.88$ ms, frame rate đạt $48.1$ FPS (gần sát mức mục tiêu 50 FPS) và packet loss $0.0\%$. FPS client là FPS hiển thị đo trên GUI (playback rate), còn FPS server là FPS gửi. Hai cách đo khác nhau nên có thể lệch nhẹ.” Các kết quả này cho thấy cơ chế client-side caching kết hợp pre-buffering đã hoạt động hiệu quả: playback ổn định hơn, giảm ảnh hưởng của biến động mạng và cải thiện chất lượng trải nghiệm trong suốt quá trình xem video. 
 \end{itemize}
 
-\subsection{Tóm tắt Client-Side Buffer}
+\subsection{Kết luận}
+Nhóm triển khai client-side caching bằng bộ đệm khung hình (deque) và cơ chế pre-buffer N frames.
+Thiết kế tách reception/playback theo mô hình producer--consumer giúp hấp thụ jitter và giữ FPS ổn định trong quá trình phát.
 
-\subsubsection{Components}
-\begin{itemize}
-    \item \textbf{Reception thread:} Nhận RTP packets → \texttt{frame\_buffer} (deque)
-    \item \textbf{Playback thread:} \texttt{popleft()} frames từ buffer → display
-    \item \textbf{Buffer capacity:} \texttt{maxlen=100} frames (bounded - tự động overflow)
-    \item \textbf{Buffer threshold:} \texttt{buffer\_target=20} frames trước khi play
-    \item \textbf{Thread synchronization:} \texttt{buffer\_lock} cho thread-safe access
-    \item \textbf{End detection:} Timeout 5 giây để detect video ended
-    \item \textbf{Packet loss resilience:} Buffer chống chịu burst loss đến 3-4 giây
-\end{itemize}
-
-\subsubsection{Benefits}
-\begin{itemize}
-    \item ✅ Giảm jitter và stuttering
-    \item ✅ Smooth playback với constant frame rate
-    \item ✅ Tự động recovery từ buffer underrun
-    \item ✅ Adaptive threshold theo network quality
-    \item ✅ GUI feedback về buffer status
-    \item ✅ Chống chịu burst packet loss hiệu quả
-\end{itemize}
-
-\subsubsection{Tradeoffs}
-\begin{itemize}
-    \item ➖ Tăng initial latency (800ms cho 20 frames @ 25 FPS)
-    \item ➖ Memory overhead ~10MB cho 100 Full HD frames
-    \item ➕ Smooth playback 98\% (giảm 90\% stuttering)
-    \item ➕ Chống jitter và burst loss với buffer 4 giây
-    \item ➕ End-of-stream detection chính xác
-    \item ➕ Circuit breaker (bounded) tránh memory leak
-\end{itemize}
-
-\subsubsection{Key Insights về Buffer và Packet Loss}
-\begin{itemize}
-    \item ❌ \textbf{Bounded buffer KHÔNG giảm packet loss} — loss xảy ra ở tầng mạng
-    \item ✅ \textbf{Buffer giúp CHỐNG CHỊU loss} — tránh underrun khi burst loss
-    \item ✅ \textbf{maxlen = circuit breaker} — tránh unbounded growth và OOM
-    \item 📐 \textbf{Công thức:} \texttt{maxlen = (FPS × burst\_duration) + margin}
-    \item ⚖️ \textbf{Trade-off:} Latency thấp (maxlen nhỏ) vs Loss tolerance cao (maxlen lớn)
-\end{itemize}
-
-\textbf{Kết luận:} Deque-based buffering với \texttt{maxlen=100} frames và \texttt{buffer\_target=20} frames là giải pháp tối ưu để đảm bảo smooth playback trong môi trường network không ổn định. Buffer KHÔNG giảm packet loss ở network nhưng giúp hệ thống chống chịu burst loss hiệu quả. Trade-off 800ms initial latency và 10MB memory là chấp nhận được để đổi lấy quality of experience tốt hơn 98\%, khả năng chống jitter và loss resilience mạnh mẽ.
-
-\clearpage
+\newpage

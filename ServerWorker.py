@@ -21,9 +21,24 @@ class ServerWorker:
     FILE_NOT_FOUND_404 = 1
     CON_ERR_500 = 2
     
+
     def __init__(self, clientInfo):
         self.clientInfo = clientInfo
         self.seq = 1000
+
+        # RTP packet cache for retransmission (NACK/RESEND)
+        from collections import OrderedDict
+        import threading
+        import time
+        self.rtp_cache = OrderedDict()      # key: seq, value: (packet_bytes, timestamp)
+        self.rtp_cache_lock = threading.Lock()
+        self.RTP_CACHE_MAX = 8000           # ~ vài nghìn packets là ổn (tuỳ RAM)
+        self.RTP_CACHE_TTL = 2.0            # chỉ giữ ~2 giây gần nhất để resend
+
+        # Packet loss simulation (for testing retransmission)
+        self.SIMULATE_PACKET_LOSS = True    # Bật/tắt giả lập loss
+        self.PACKET_LOSS_RATE = 0.05        # 5% packet loss (thay đổi tùy ý)
+        self.packets_dropped = 0            # Đếm số packet bị drop
 
         
         # Statistics
@@ -40,7 +55,7 @@ class ServerWorker:
         connSocket = self.clientInfo['rtspSocket'][0]
         while True:
             try:
-                data = connSocket.recv(256)
+                data = connSocket.recv(4096)
                 if data:
                     print("Received:\n" + data.decode("utf-8"))
                     self.processRtspRequest(data.decode("utf-8"))
@@ -113,6 +128,49 @@ class ServerWorker:
                     self.replyRtsp(self.OK_200, seq[1])
                     self.printStatistics()
             
+
+            elif requestType == "RESEND":
+                # tìm dòng "Missing:"
+                missing_line = None
+                for line in request:
+                    if line.startswith("Missing:"):
+                        missing_line = line
+                        break
+                if not missing_line:
+                    return
+
+                missing_spec = missing_line.split(":", 1)[1].strip()
+
+                def expand(spec: str):
+                    out = []
+                    for part in spec.split(","):
+                        part = part.strip()
+                        if not part:
+                            continue
+                        if "-" in part:
+                            a, b = part.split("-", 1)
+                            a, b = int(a), int(b)
+                            out.extend(range(a, b + 1))
+                        else:
+                            out.append(int(part))
+                    return out
+
+                missing_seqs = expand(missing_spec)
+
+                address = self.clientInfo['rtspSocket'][1][0]
+                port = int(self.clientInfo['rtpPort'])
+
+                resent = 0
+                with self.rtp_cache_lock:
+                    for s in missing_seqs:
+                        if s in self.rtp_cache:
+                            pkt, _ = self.rtp_cache[s]
+                            self.clientInfo['rtpSocket'].sendto(pkt, (address, port))
+                            resent += 1
+
+                print(f"RESEND: requested={len(missing_seqs)} resent={resent}")
+
+            # ...existing code...
             elif requestType == self.TEARDOWN:
                 print("processing TEARDOWN\n")
                 self.clientInfo['event'].set()
@@ -124,7 +182,7 @@ class ServerWorker:
                     self.clientInfo['videoStream'].close()
                 if 'rtpSocket' in self.clientInfo:
                     self.clientInfo['rtpSocket'].close()
-                    
+
         except Exception as e:
             print(f"✗ Process error: {e}")
             traceback.print_exc()
@@ -224,21 +282,40 @@ class ServerWorker:
     def splitAndSendFrame(self, data, frameNumber, address, port):
         MTU = 1450
         packets_count = math.ceil(len(data) / MTU)
-        
+
         for i in range(packets_count):
             offset = i * MTU
             chunk = data[offset:offset + MTU]
-            
+
             self.seq += 1
             marker = 1 if (offset + MTU >= len(data)) else 0
-            
+
             # Create RTP packet
             packet = self.makeRtp(chunk, self.seq, marker)
-            
+
+            # --- RTP cache logic ---
+            now = time.time()
+            with self.rtp_cache_lock:
+                self.rtp_cache[self.seq] = (packet, now)
+                # Remove expired packets (TTL)
+                while self.rtp_cache and (now - next(iter(self.rtp_cache.values()))[1] > self.RTP_CACHE_TTL):
+                    self.rtp_cache.popitem(last=False)
+                # Limit max cache size
+                while len(self.rtp_cache) > self.RTP_CACHE_MAX:
+                    self.rtp_cache.popitem(last=False)
+
+            # --- Simulate packet loss (for testing retransmission) ---
+            if self.SIMULATE_PACKET_LOSS:
+                from random import random
+                if random() < self.PACKET_LOSS_RATE:
+                    self.packets_dropped += 1
+                    # Skip sending this packet (simulated loss)
+                    continue
+
             # Send packet
             self.clientInfo['rtpSocket'].sendto(packet, (address, port))
             self.packets_sent += 1
-        
+
         return packets_count
     
     def makeRtp(self, payload, frameNbr, marker):
@@ -288,6 +365,7 @@ class ServerWorker:
         print(f"Runtime:              {runtime:.1f} seconds")
         print(f"Frames sent:          {self.frames_sent}")
         print(f"Packets sent:         {self.packets_sent}")
+        print(f"Packets dropped:      {self.packets_dropped} (simulated loss: {self.PACKET_LOSS_RATE*100:.1f}%)")
         print(f"Total data:           {self.bytes_sent/(1024*1024):.2f} MB")
         print(f"Average bitrate:      {avg_bitrate:.2f} Mbps")
         print(f"Average FPS:          {avg_fps:.1f}")
